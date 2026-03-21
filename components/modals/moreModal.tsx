@@ -59,12 +59,20 @@ export const MoreModal = ({ isOpen, onClose }: MoreModalProps) => {
               label="Contact" 
               onPress={() => handleNavigate("/contact")}
             />
-            <MenuItem icon={<Ionicons name="shield-checkmark-outline" size={18} color="#64748b" />} label="Privacy Policy" />
-            <MenuItem icon={<Ionicons name="document-text-outline" size={18} color="#64748b" />} label="Terms" />
+            <MenuItem 
+              icon={<Ionicons name="shield-checkmark-outline" size={18} color="#64748b" />} 
+              label="Privacy Policy" 
+              onPress={() => handleNavigate("/privacy")}
+            />
+            <MenuItem 
+              icon={<Ionicons name="document-text-outline" size={18} color="#64748b" />} 
+              label="Terms" 
+              onPress={() => handleNavigate("/terms")}
+            />
             <MenuItem 
             icon={<Ionicons name="help-circle-outline" size={18} color="#64748b" />} 
             label="Help Center" 
-            onPress={() => {}}
+            onPress={() => handleNavigate("/help")}
           />
           </ScrollView>
         </View>

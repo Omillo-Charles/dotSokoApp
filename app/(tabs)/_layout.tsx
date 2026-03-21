@@ -71,6 +71,24 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="privacy/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="terms/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="help/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="create/index"
         options={{
           tabBarLabel: () => null,
