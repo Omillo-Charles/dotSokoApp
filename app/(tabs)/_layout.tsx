@@ -4,21 +4,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 import { Header } from "@components/layout/header";
 import { MoreModal } from "@components/modals/moreModal";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function TabsLayout() {
   const [isMoreModalOpen, setIsMoreModalOpen] = React.useState(false);
+  const { isDark } = useColorScheme();
   return (
     <>
       <Tabs
       screenOptions={{
         header: () => <Header />,
         tabBarActiveTintColor: "#3b82f6", // primary
-        tabBarInactiveTintColor: "#64748b", // muted-foreground
+        tabBarInactiveTintColor: isDark ? "#94a3b8" : "#64748b",
         tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: "#ffffff",
+          backgroundColor: isDark ? "#020617" : "#ffffff",
           borderTopWidth: 1,
-          borderTopColor: "#e2e8f0",
+          borderTopColor: isDark ? "#1e293b" : "#e2e8f0",
           height: 65,
           paddingBottom: 10,
           paddingTop: 5,

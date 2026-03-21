@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, SafeAreaView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Input } from "@components/ui/input";
@@ -18,7 +18,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <View className="flex-1 bg-background">
       <ScrollView 
         className="flex-1 px-6 pt-10"
         showsVerticalScrollIndicator={false}
@@ -102,6 +102,6 @@ export default function RegisterScreen() {
           <Text className="text-primary font-ubuntu-bold">Privacy Policy</Text>
         </Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
