@@ -30,6 +30,17 @@ export default function RootLayout() {
       screenOptions={{
         headerShown: false,
       }}
-    />
+    >
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen 
+        name="more-modal" 
+        options={{ 
+          presentation: "transparentModal",
+          animation: "fade",
+          contentStyle: { backgroundColor: "transparent" }
+        }} 
+      />
+    </Stack>
   );
 }

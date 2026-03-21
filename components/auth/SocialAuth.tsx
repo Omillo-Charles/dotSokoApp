@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Github } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
 
 const GoogleIcon = () => (
@@ -39,7 +39,7 @@ export const SocialAuth: React.FC = () => {
         className="flex-1 flex-row items-center justify-center gap-3 py-4 border border-border rounded-2xl bg-background"
         activeOpacity={0.7}
       >
-        <Github size={20} color="#0f172a" />
+        <Ionicons name="logo-github" size={20} color="#0f172a" />
         <Text className="font-ubuntu-bold text-foreground">GitHub</Text>
       </TouchableOpacity>
     </View>

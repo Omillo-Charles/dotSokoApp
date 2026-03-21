@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, SafeAreaView, TouchableOpacity } from "react-native";
 import { Link, useRouter } from "expo-router";
-import { Mail, Lock, ArrowRight, ArrowLeft } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { SocialAuth } from "../../components/auth/SocialAuth";
@@ -26,7 +26,7 @@ export default function LoginScreen() {
           onPress={() => router.back()}
           className="w-10 h-10 items-center justify-center rounded-full bg-muted mb-8"
         >
-          <ArrowLeft size={20} color="#0f172a" />
+          <Ionicons name="arrow-back" size={20} color="#0f172a" />
         </TouchableOpacity>
 
         <View className="mb-10">
@@ -45,7 +45,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            icon={<Mail size={20} color="#64748b" />}
+            icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
           />
 
           <Input
@@ -54,7 +54,7 @@ export default function LoginScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            icon={<Lock size={20} color="#64748b" />}
+            icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
           />
 
           <TouchableOpacity className="items-end mb-6">
@@ -66,7 +66,7 @@ export default function LoginScreen() {
           <Button 
             title="Sign In" 
             onPress={handleLogin}
-            icon={<ArrowRight size={20} color="#ffffff" />}
+            icon={<Ionicons name="arrow-forward" size={20} color="#ffffff" />}
           />
         </View>
 

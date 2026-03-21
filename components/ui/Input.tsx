@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput, Text, TouchableOpacity } from "react-native";
-import { Eye, EyeOff } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface InputProps {
   label?: string;
@@ -61,9 +61,9 @@ export const Input: React.FC<InputProps> = ({
             className="ml-2"
           >
             {isPasswordVisible ? (
-              <EyeOff size={20} color="#64748b" />
+              <Ionicons name="eye-off-outline" size={20} color="#64748b" />
             ) : (
-              <Eye size={20} color="#64748b" />
+              <Ionicons name="eye-outline" size={20} color="#64748b" />
             )}
           </TouchableOpacity>
         )}

@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 
-export default function App() {
+export default function HomeScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <View className="p-8 rounded-3xl bg-brand-soft-blue border border-border items-center">
