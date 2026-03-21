@@ -5,9 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { Input } from "@components/ui/input";
 import { Button } from "@components/ui/button";
 import { SocialAuth } from "@components/auth/socialAuth";
+import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { isDark } = useColorScheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -24,9 +26,9 @@ export default function LoginScreen() {
       >
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="w-10 h-10 items-center justify-center rounded-full bg-muted mb-8"
+          className="mb-8 pt-10"
         >
-          <Ionicons name="arrow-back" size={20} color="#0f172a" />
+          <Ionicons name="chevron-back" size={28} color={isDark ? "#ffffff" : "#0f172a"} />
         </TouchableOpacity>
 
         <View className="mb-10">
