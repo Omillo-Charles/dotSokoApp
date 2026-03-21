@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { Text, View, TouchableOpacity } from "react-native";
+import { Link } from "expo-router";
 
 export default function App() {
   return (
@@ -10,11 +11,13 @@ export default function App() {
         <Text className="text-base font-ubuntu text-muted-foreground text-center">
           Multivendor Platform
         </Text>
-        <View className="mt-6 px-6 py-3 rounded-full bg-secondary">
-          <Text className="text-secondary-foreground font-ubuntu-medium">
-            Get Started
-          </Text>
-        </View>
+        <Link href="/login" asChild>
+          <TouchableOpacity className="mt-6 px-10 py-4 rounded-full bg-secondary shadow-lg shadow-secondary/30">
+            <Text className="text-secondary-foreground font-ubuntu-bold text-lg">
+              Get Started
+            </Text>
+          </TouchableOpacity>
+        </Link>
       </View>
     </View>
   );
