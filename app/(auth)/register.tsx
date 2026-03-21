@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, SafeAreaView, TouchableOpacity } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Input } from "../../components/ui/Input";
-import { Button } from "../../components/ui/Button";
-import { SocialAuth } from "../../components/auth/SocialAuth";
+import { Input } from "@components/ui/input";
+import { Button } from "@components/ui/button";
+import { SocialAuth } from "@components/auth/socialAuth";
 
 export default function RegisterScreen() {
   const router = useRouter();

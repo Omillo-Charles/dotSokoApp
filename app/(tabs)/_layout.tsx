@@ -2,12 +2,16 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
+import { Header } from "@components/layout/header";
+import { MoreModal } from "@components/modals/moreModal";
 
 export default function TabsLayout() {
+  const [isMoreModalOpen, setIsMoreModalOpen] = React.useState(false);
   return (
-    <Tabs
+    <>
+      <Tabs
       screenOptions={{
-        headerShown: false,
+        header: () => <Header />,
         tabBarActiveTintColor: "#3b82f6", // primary
         tabBarInactiveTintColor: "#64748b", // muted-foreground
         tabBarStyle: {
@@ -76,7 +80,7 @@ export default function TabsLayout() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate("more-modal");
+            setIsMoreModalOpen(true);
           },
         })}
         options={{
@@ -85,5 +89,7 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    <MoreModal isOpen={isMoreModalOpen} onClose={() => setIsMoreModalOpen(false)} />
+    </>
   );
 }
