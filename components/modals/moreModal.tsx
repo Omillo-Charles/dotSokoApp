@@ -46,14 +46,26 @@ export const MoreModal = ({ isOpen, onClose }: MoreModalProps) => {
               onPress={() => handleNavigate("/about")}
             />
             <MenuItem 
+            icon={<Ionicons name="star-outline" size={18} color="#f59e0b" />} 
+            label="Premium" 
+            onPress={() => {
+              onClose();
+              router.push("/premium");
+            }}
+          />
+          
+            <MenuItem 
               icon={<Ionicons name="mail-outline" size={18} color="#64748b" />} 
               label="Contact" 
               onPress={() => handleNavigate("/contact")}
             />
-            <MenuItem icon={<Ionicons name="ribbon-outline" size={18} color="#f59e0b" />} label="Premium" />
             <MenuItem icon={<Ionicons name="shield-checkmark-outline" size={18} color="#64748b" />} label="Privacy Policy" />
             <MenuItem icon={<Ionicons name="document-text-outline" size={18} color="#64748b" />} label="Terms" />
-            <MenuItem icon={<Ionicons name="help-circle-outline" size={18} color="#64748b" />} label="Help Center" />
+            <MenuItem 
+            icon={<Ionicons name="help-circle-outline" size={18} color="#64748b" />} 
+            label="Help Center" 
+            onPress={() => {}}
+          />
           </ScrollView>
         </View>
       </View>
