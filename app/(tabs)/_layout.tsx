@@ -14,17 +14,19 @@ export default function TabsLayout() {
         header: () => <Header />,
         tabBarActiveTintColor: "#3b82f6", // primary
         tabBarInactiveTintColor: "#64748b", // muted-foreground
+        tabBarShowLabel: true,
         tabBarStyle: {
           backgroundColor: "#ffffff",
           borderTopWidth: 1,
           borderTopColor: "#e2e8f0",
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          height: 65,
+          paddingBottom: 10,
+          paddingTop: 5,
         },
         tabBarLabelStyle: {
           fontFamily: "Ubuntu-Medium",
-          fontSize: 10,
+          fontSize: 11,
+          marginTop: -4,
         },
       }}
     >
@@ -45,8 +47,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="create"
         options={{
-          title: "",
-          tabBarShowLabel: false,
+          tabBarLabel: () => null,
           tabBarIcon: ({ color }) => (
             <View 
               style={{
