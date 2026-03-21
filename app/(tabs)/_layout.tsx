@@ -40,14 +40,14 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="shop"
+        name="shop/index"
         options={{
           title: "Shop",
           tabBarIcon: ({ color, size }) => <Ionicons name="storefront" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="create"
+        name="create/index"
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ color }) => (
@@ -72,14 +72,14 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="deals"
+        name="deals/index"
         options={{
           title: "Deals",
           tabBarIcon: ({ color, size }) => <Ionicons name="pricetag" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="more"
+        name="more/index"
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
