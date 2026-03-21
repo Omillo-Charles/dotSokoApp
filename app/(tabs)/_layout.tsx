@@ -47,6 +47,18 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="categories/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="contact/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="create/index"
         options={{
           tabBarLabel: () => null,

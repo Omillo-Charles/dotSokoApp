@@ -10,8 +10,25 @@ import "../globals.css";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayoutNav() {
   const { isDark } = useColorScheme();
+  
+  return (
+    <View className={`flex-1 ${isDark ? "dark" : ""}`} style={{ backgroundColor: isDark ? "#020617" : "#ffffff" }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      </Stack>
+    </View>
+  );
+}
+
+export default function RootLayout() {
   const [loaded] = useFonts({
     "Ubuntu-Light": require("../assets/fonts/ubuntufont/ubuntu-font-family-0.83/Ubuntu-L.ttf"),
     "Ubuntu-Regular": require("../assets/fonts/ubuntufont/ubuntu-font-family-0.83/Ubuntu-R.ttf"),
@@ -31,17 +48,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <View className={`flex-1 ${isDark ? "dark" : ""}`}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: "transparent" },
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        </Stack>
-      </View>
+      <RootLayoutNav />
     </SafeAreaProvider>
   );
 }

@@ -12,9 +12,13 @@ export function useColorScheme() {
 
   useEffect(() => {
     // Only set NW color scheme if it differs from our computed scheme
-    if (nwColorScheme !== colorScheme) {
-      setNWColorScheme(colorScheme);
-    }
+    // Use requestAnimationFrame to ensure we don't block the UI thread during navigation/renders
+    const timer = setTimeout(() => {
+      if (nwColorScheme !== colorScheme) {
+        setNWColorScheme(colorScheme);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [colorScheme, nwColorScheme, setNWColorScheme]);
 
   const toggleTheme = () => {

@@ -44,7 +44,7 @@ export const Categories = () => {
         <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white">
           Shop by Category
         </Text>
-        <Link href="/shop" asChild>
+        <Link href="/categories" asChild>
           <TouchableOpacity>
             <Text className="text-sm font-ubuntu-bold text-primary">See all</Text>
           </TouchableOpacity>
