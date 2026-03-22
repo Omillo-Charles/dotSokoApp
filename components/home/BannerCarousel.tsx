@@ -98,11 +98,13 @@ export const BannerCarousel = () => {
                 onPress={() => router.push(slide.route as any)}
                 style={styles.slide}
               >
-                <Image
-                  source={slide.image}
-                  style={StyleSheet.absoluteFillObject}
-                  resizeMode="cover"
-                />
+                <View style={[StyleSheet.absoluteFillObject, { overflow: 'hidden' }]}>
+                  <Image
+                    source={slide.image}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
+                </View>
                 {/* Overlay uses absoluteFillObject for pixel-perfect centering on every slide */}
                 <View style={styles.overlay}>
                   <Text style={styles.title} numberOfLines={2}>
@@ -144,6 +146,10 @@ const styles = StyleSheet.create({
   slide: {
     width: SLIDE_WIDTH,
     height: 220,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
