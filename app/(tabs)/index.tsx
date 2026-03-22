@@ -1,7 +1,7 @@
 import React from "react";
-import { Text, View, TouchableOpacity, ScrollView } from "react-native";
-import { Link } from "expo-router";
+import { View, ScrollView } from "react-native";
 import { Categories } from "@components/home/categories";
+import { BannerCarousel } from "@components/home/BannerCarousel";
 
 export default function HomeScreen() {
   return (
@@ -12,7 +12,10 @@ export default function HomeScreen() {
       {/* Categories Section */}
       <Categories />
 
-      {/* Additional space for bottom padding */}
+      {/* Banner Carousel */}
+      <BannerCarousel />
+
+      {/* Bottom padding */}
       <View className="h-20" />
     </ScrollView>
   );

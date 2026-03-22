@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { Scale, ShieldCheck, ShoppingBag, Users, Lock, FileText, Bell, Mail } from 'lucide-react-native';
-import { useColorScheme } from '../../../hooks/useColorScheme';
+import { useColorScheme } from '@hooks/useColorScheme';
 
 export default function TermsScreen() {
   const { isDark } = useColorScheme();
