@@ -1,12 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import { ShoppingBag } from 'lucide-react-native';
+import { View, Text, Pressable, Platform, ScrollView, TouchableOpacity } from 'react-native';
+import { Search, ShoppingBag } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 export default function DealsScreen() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { isDark } = useColorScheme();
   const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
+      {/* Header matching Shop/Cart/Wishlist */}
+      <View className="px-4 py-4 flex-row items-center bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          className="p-2 -ml-2 mr-2"
+        >
+          <Ionicons name="arrow-back" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
+        </TouchableOpacity>
+        <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white">
+          Deals
+        </Text>
+      </View>
+
       <ScrollView 
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -17,6 +37,9 @@ export default function DealsScreen() {
         >
           <View className="px-4 pt-1 mb-1 flex-row items-center justify-between">
             <Text className="text-2xl font-ubuntu-bold text-slate-900 dark:text-white tracking-tight">Deals</Text>
+            <Pressable className="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-full items-center justify-center">
+              <Search size={18} color="#64748b" />
+            </Pressable>
           </View>
 
           <View className="flex-row">
@@ -50,6 +73,7 @@ export default function DealsScreen() {
           </Text>
         </View>
       </ScrollView>
+
     </View>
   );
 }

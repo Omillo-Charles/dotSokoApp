@@ -1,14 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Platform, ScrollView } from 'react-native';
+import { View, Text, Pressable, Platform, ScrollView, TouchableOpacity } from 'react-native';
 import { Search, Plus, ShoppingBag } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 export default function ShopScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { isDark } = useColorScheme();
   const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
+      {/* Header matching Cart/Wishlist */}
+      <View className="px-4 py-4 flex-row items-center bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          className="p-2 -ml-2 mr-2"
+        >
+          <Ionicons name="arrow-back" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
+        </TouchableOpacity>
+        <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white">
+          Shop
+        </Text>
+      </View>
+
       <ScrollView 
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -64,7 +82,7 @@ export default function ShopScreen() {
         className="absolute bottom-6 right-6 z-40 bg-primary h-14 w-14 rounded-full items-center justify-center"
         style={Platform.OS === 'ios' ? { shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 } : {}}
       >
-        <Plus size={24} color="#ffffff" />
+        <Ionicons name="add" size={24} color="#ffffff" />
       </Pressable>
     </View>
   );

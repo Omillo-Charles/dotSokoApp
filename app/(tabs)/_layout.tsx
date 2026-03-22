@@ -40,11 +40,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="shop/index"
+        name="shopRedirect"
         options={{
           title: "Shop",
           tabBarIcon: ({ color, size }) => <Ionicons name="storefront" size={size} color={color} />,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("shop");
+          },
+        })}
       />
       <Tabs.Screen
         name="categories/index"
@@ -132,11 +138,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="deals/index"
+        name="dealsRedirect"
         options={{
           title: "Deals",
           tabBarIcon: ({ color, size }) => <Ionicons name="pricetag" size={size} color={color} />,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("deals");
+          },
+        })}
       />
       <Tabs.Screen
         name="more/index"
