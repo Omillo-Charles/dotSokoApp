@@ -22,72 +22,79 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-      <ScrollView 
-        className="flex-1 px-6"
-        contentContainerStyle={{ paddingTop: 20 }}
-        showsVerticalScrollIndicator={false}
-      >
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
+      <View className="px-4 py-4 flex-row items-center justify-between bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="mb-8 p-2 -ml-2"
+          className="p-2 -ml-2"
         >
-          <Ionicons name="chevron-back" size={28} color={isDark ? "#ffffff" : "#0f172a"} />
+          <Ionicons name="arrow-back" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
         </TouchableOpacity>
+        <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white">
+          Sign In
+        </Text>
+        <View className="w-10" />
+      </View>
 
-        <View className="mb-10">
-          <Text className="text-4xl font-ubuntu-bold text-foreground tracking-tight">
+      <ScrollView 
+        className="flex-1 px-4 pt-6"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="mb-8 px-2">
+          <Text className="text-3xl font-ubuntu-bold text-slate-900 dark:text-white tracking-tight">
             Welcome Back
           </Text>
-          <Text className="text-lg font-ubuntu text-muted-foreground mt-2">
+          <Text className="text-base font-ubuntu text-slate-500 dark:text-slate-400 mt-2">
             Sign in to access your account
           </Text>
         </View>
 
-        <View className="space-y-4">
-          <Input
-            label="Email Address"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
-          />
+        <View className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-white/5 mb-8">
+          <View className="space-y-4">
+            <Input
+              label="Email Address"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
+            />
 
-          <Input
-            label="Password"
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
-          />
+            <Input
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
+            />
 
-          <TouchableOpacity className="items-end mb-6">
-            <Text className="text-sm font-ubuntu-bold text-primary">
-              Forgot password?
+            <TouchableOpacity className="items-end mb-4">
+              <Text className="text-sm font-ubuntu-bold text-primary">
+                Forgot password?
+              </Text>
+            </TouchableOpacity>
+
+            <Button 
+              title="Sign In" 
+              onPress={handleLogin}
+              icon={<Ionicons name="arrow-forward" size={20} color="#ffffff" />}
+            />
+          </View>
+
+          <View className="my-8 flex-row items-center gap-4">
+            <View className="flex-1 h-px bg-slate-100 dark:bg-white/5" />
+            <Text className="text-[10px] font-ubuntu-bold text-slate-400 uppercase tracking-widest text-center">
+              Or continue with
             </Text>
-          </TouchableOpacity>
+            <View className="flex-1 h-px bg-slate-100 dark:bg-white/5" />
+          </View>
 
-          <Button 
-            title="Sign In" 
-            onPress={handleLogin}
-            icon={<Ionicons name="arrow-forward" size={20} color="#ffffff" />}
-          />
+          <SocialAuth />
         </View>
 
-        <View className="my-10 flex-row items-center gap-4">
-          <View className="flex-1 h-px bg-border" />
-          <Text className="text-xs font-ubuntu-bold text-muted-foreground uppercase tracking-widest text-center">
-            Or continue with
-          </Text>
-          <View className="flex-1 h-px bg-border" />
-        </View>
-
-        <SocialAuth />
-
-        <View className="mt-12 mb-20 flex-row justify-center gap-1">
-          <Text className="font-ubuntu text-muted-foreground">
+        <View className="mb-20 flex-row justify-center gap-1">
+          <Text className="font-ubuntu text-slate-500 dark:text-slate-400">
             Don't have an account?
           </Text>
           <Link href="/register" asChild>
