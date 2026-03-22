@@ -30,6 +30,7 @@ export const SocialAuth: React.FC = () => {
       <TouchableOpacity
         className="flex-1 flex-row items-center justify-center gap-3 py-4 border border-border rounded-2xl bg-background"
         activeOpacity={0.7}
+        onPress={() => console.log('Google login clicked')}
       >
         <GoogleIcon />
         <Text className="font-ubuntu-bold text-foreground">Google</Text>
@@ -38,6 +39,7 @@ export const SocialAuth: React.FC = () => {
       <TouchableOpacity
         className="flex-1 flex-row items-center justify-center gap-3 py-4 border border-border rounded-2xl bg-background"
         activeOpacity={0.7}
+        onPress={() => console.log('GitHub login clicked')}
       >
         <Ionicons name="logo-github" size={20} color="#0f172a" />
         <Text className="font-ubuntu-bold text-foreground">GitHub</Text>

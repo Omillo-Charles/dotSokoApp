@@ -6,28 +6,32 @@ import { Input } from "@components/ui/input";
 import { Button } from "@components/ui/button";
 import { SocialAuth } from "@components/auth/socialAuth";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleRegister = () => {
-    // UI Only - no backend yet
-    console.log("Register clicked");
+    // UI Only for now
+    console.log("Register clicked:", { name, email, password });
+    router.replace("/(tabs)");
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <ScrollView 
-        className="flex-1 px-6 pt-10"
+        className="flex-1 px-6"
+        contentContainerStyle={{ paddingTop: 20 }}
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity 
           onPress={() => router.back()}
-          className="mb-8 pt-10"
+          className="mb-8 p-2 -ml-2"
         >
           <Ionicons name="chevron-back" size={28} color={isDark ? "#ffffff" : "#0f172a"} />
         </TouchableOpacity>
