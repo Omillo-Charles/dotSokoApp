@@ -4,10 +4,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { useCartStore } from "../../store/useCartStore";
+import { useWishlistStore } from "../../store/useWishlistStore";
 
 export const Header = () => {
   const insets = useSafeAreaInsets();
   const { isDark, toggleTheme } = useColorScheme();
+  const { getTotalItems: getCartTotal } = useCartStore();
+  const { getTotalItems: getWishlistTotal } = useWishlistStore();
+  const totalCartItems = getCartTotal();
+  const totalWishlistItems = getWishlistTotal();
   
   return (
     <View 
@@ -36,19 +42,27 @@ export const Header = () => {
               />
             </TouchableOpacity>
             
-            <TouchableOpacity className="relative">
-              <Ionicons name="heart-outline" size={24} color={isDark ? "#f8fafc" : "#64748b"} />
-              <View className="absolute -top-1 -right-1 w-4 h-4 bg-secondary items-center justify-center rounded-full">
-                <Text className="text-[10px] font-ubuntu-bold text-white">0</Text>
-              </View>
-            </TouchableOpacity>
+            <Link href="/wishlist" asChild>
+              <TouchableOpacity className="relative">
+                <Ionicons name="heart-outline" size={24} color={isDark ? "#f8fafc" : "#64748b"} />
+                {totalWishlistItems > 0 && (
+                  <View className="absolute -top-1 -right-1 w-4 h-4 bg-secondary items-center justify-center rounded-full">
+                    <Text className="text-[10px] font-ubuntu-bold text-white">{totalWishlistItems}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </Link>
 
-            <TouchableOpacity className="relative">
-              <Ionicons name="cart-outline" size={24} color={isDark ? "#f8fafc" : "#64748b"} />
-              <View className="absolute -top-1 -right-1 w-4 h-4 bg-secondary items-center justify-center rounded-full">
-                <Text className="text-[10px] font-ubuntu-bold text-white">0</Text>
-              </View>
-            </TouchableOpacity>
+            <Link href="/cart" asChild>
+              <TouchableOpacity className="relative">
+                <Ionicons name="cart-outline" size={24} color={isDark ? "#f8fafc" : "#64748b"} />
+                {totalCartItems > 0 && (
+                  <View className="absolute -top-1 -right-1 w-4 h-4 bg-secondary items-center justify-center rounded-full">
+                    <Text className="text-[10px] font-ubuntu-bold text-white">{totalCartItems}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </Link>
 
             <Link href="/login" asChild>
               <TouchableOpacity>
