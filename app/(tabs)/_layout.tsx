@@ -95,6 +95,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="returns/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="create/index"
         options={{
           tabBarLabel: () => null,

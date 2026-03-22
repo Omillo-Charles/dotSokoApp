@@ -45,7 +45,7 @@ export default function HelpScreen() {
 
             {/* Returns */}
             <Pressable 
-              onPress={() => {}}
+              onPress={() => router.push('/returns' as any)}
               className="flex-row items-center gap-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-5 shadow-sm"
             >
               <View className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
