@@ -1,16 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
+import * as SplashScreenNative from "expo-splash-screen";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useColorScheme as useDeviceColorScheme } from "react-native";
 import { useColorScheme } from "nativewind";
 import { useThemeStore } from "../store/useThemeStore";
+import SplashScreen from "@components/ui/SplashScreen"; // <- our custom splash
 import "../globals.css";
 
-// Prevent splash screen from auto hiding
-SplashScreen.preventAutoHideAsync();
+// Prevent native splash from auto-hiding
+SplashScreenNative.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
@@ -24,7 +25,6 @@ function RootLayoutNav() {
 
   const isDark = colorScheme === "dark";
 
-  // Sync NativeWind theme WITHOUT affecting navigation tree
   useEffect(() => {
     setColorScheme(colorScheme);
   }, [colorScheme]);
@@ -58,13 +58,19 @@ export default function RootLayout() {
     "Ubuntu-Bold": require("../assets/fonts/ubuntufont/ubuntu-font-family-0.83/Ubuntu-B.ttf"),
   });
 
+  const [appReady, setAppReady] = useState(false);
+
+  // Hide native splash only after React splash renders
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      setAppReady(true); // show custom splash
+      SplashScreenNative.hideAsync();
     }
   }, [loaded]);
 
-  if (!loaded) return null;
+  if (!appReady) {
+    return <SplashScreen onLoaded={() => setAppReady(true)} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
