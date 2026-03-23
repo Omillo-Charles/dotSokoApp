@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ImageCarousel } from "@/components/media/ImageCarousel";
+import { Image } from "expo-image";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 92; // 16 (left p) + 48 (avatar) + 12 (mr) + 16 (right p)
@@ -52,10 +53,12 @@ export const ProductCard = ({
           onPress={() => router.push(`/shop/${product.shop?._id || product.shop?.id}` as any)}
         >
           <View className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10">
-            <ImageCarousel 
-              images={[shopAvatar]} 
-              width={48}
-              maxHeight={48}
+            <Image 
+              source={shopAvatar} 
+              style={{ width: '100%', height: '100%' }}
+              contentFit="cover"
+              transition={200}
+              cachePolicy="disk"
             />
           </View>
         </TouchableOpacity>
