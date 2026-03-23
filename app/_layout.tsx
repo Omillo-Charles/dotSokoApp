@@ -4,11 +4,14 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useColorScheme } from "../hooks/useColorScheme";
 import "../globals.css";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   const { isDark } = useColorScheme();
@@ -24,7 +27,9 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="cart" options={{ presentation: "modal", headerShown: false }} />
-        <Stack.Screen name="shop" options={{ headerShown: false }} />
+        <Stack.Screen name="shop/index" options={{ headerShown: false }} />
+        <Stack.Screen name="shop/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="shop/product/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="deals" options={{ headerShown: false }} />
         <Stack.Screen name="wishlist" options={{ headerShown: false }} />
       </Stack>
@@ -51,8 +56,10 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <RootLayoutNav />
-    </SafeAreaProvider>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <RootLayoutNav />
+      </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }

@@ -3,7 +3,7 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 import { Header } from "@components/layout/header";
-import { useColorScheme } from "../../hooks/useColorScheme";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabsLayout() {
   const { isDark } = useColorScheme();
@@ -46,7 +46,7 @@ export default function TabsLayout() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate("shop");
+            navigation.navigate("shop/index");
           },
         })}
       />
