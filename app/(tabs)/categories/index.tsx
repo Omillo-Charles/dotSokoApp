@@ -14,7 +14,7 @@ const CategoryListItem = ({ item }: { item: Category }) => {
   const IconComponent = item.iconFamily === "Ionicons" ? Ionicons : MaterialCommunityIcons;
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={() => router.push(item.href as any)}
       style={{ width: COLUMN_WIDTH }}
       className="mb-6 bg-white dark:bg-slate-900 rounded-[32px] overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm"
@@ -26,13 +26,13 @@ const CategoryListItem = ({ item }: { item: Category }) => {
           resizeMode="cover"
         />
         <View className="absolute inset-0 bg-black/20" />
-        
+
         {/* Icon Badge */}
         <View className="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/80 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 dark:border-white/10">
-          <IconComponent 
-            name={item.iconName as any} 
-            size={20} 
-            color={isDark ? "#f8fafc" : "#64748b"} 
+          <IconComponent
+            name={item.iconName as any}
+            size={20}
+            color={isDark ? "#f8fafc" : "#64748b"}
           />
         </View>
 
@@ -52,9 +52,9 @@ export default function CategoriesScreen() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-white dark:bg-slate-950">
       {/* Custom Header within Screen if needed, but we have the global Header */}
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 20, paddingBottom: 100 }}
@@ -79,17 +79,17 @@ export default function CategoriesScreen() {
           <View className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 items-center justify-center mb-4">
             <Ionicons name="search" size={24} color="#3b82f6" />
           </View>
-          
+
           <Text className="text-2xl font-ubuntu-bold text-slate-900 dark:text-white text-center mb-2">
             Not seeing what you are looking for?
           </Text>
-          
+
           <Text className="text-sm font-ubuntu text-slate-500 dark:text-slate-400 text-center mb-8 px-4">
             Explore our full collection of products or get in touch with us for assistance.
           </Text>
 
           <View className="w-full">
-            <TouchableOpacity 
+            <TouchableOpacity
               className="w-full bg-primary py-4 rounded-2xl flex-row items-center justify-center shadow-lg shadow-primary/25 mb-4"
               onPress={() => router.push("/shop" as any)}
             >
@@ -97,7 +97,7 @@ export default function CategoriesScreen() {
               <Text className="text-white font-ubuntu-bold text-base ml-2">Browse All Products</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               className="w-full bg-white dark:bg-slate-800 py-4 rounded-2xl flex-row items-center justify-center border border-slate-100 dark:border-white/10"
               onPress={() => router.push("/contact" as any)}
             >
