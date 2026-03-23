@@ -1,24 +1,21 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Input } from "@components/ui/input";
 import { Button } from "@components/ui/button";
-import { SocialAuth } from "@components/auth/socialAuth";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleResetPassword = () => {
     // UI Only for now
-    console.log("Login clicked:", { email, password });
-    router.replace("/(tabs)");
+    console.log("Reset password requested for:", email);
   };
 
   return (
@@ -31,7 +28,7 @@ export default function LoginScreen() {
           <Ionicons name="arrow-back" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
         </TouchableOpacity>
         <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white">
-          Sign In
+          Reset Password
         </Text>
         <View className="w-10" />
       </View>
@@ -42,10 +39,10 @@ export default function LoginScreen() {
       >
         <View className="mb-8 px-2">
           <Text className="text-3xl font-ubuntu-bold text-slate-900 dark:text-white tracking-tight">
-            Welcome Back
+            Forgot Password?
           </Text>
           <Text className="text-base font-ubuntu text-slate-500 dark:text-slate-400 mt-2">
-            Sign in to access your account
+            Enter the email address associated with your account and we'll send you a link to reset your password.
           </Text>
         </View>
 
@@ -60,52 +57,23 @@ export default function LoginScreen() {
               icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
             />
 
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
-            />
-
-            <TouchableOpacity 
-              className="items-end mb-4"
-              onPress={() => router.push("/(auth)/forgot-password")}
-            >
-              <Text className="text-sm font-ubuntu-bold text-primary">
-                Forgot password?
-              </Text>
-            </TouchableOpacity>
-
-            <Button 
-              title="Sign In" 
-              onPress={handleLogin}
-              icon={<Ionicons name="arrow-forward" size={20} color="#ffffff" />}
-            />
+            <View className="mt-4">
+              <Button 
+                title="Send Reset Link" 
+                onPress={handleResetPassword}
+                icon={<Ionicons name="mail-unread-outline" size={20} color="#ffffff" />}
+              />
+            </View>
           </View>
-
-          <View className="my-8 flex-row items-center gap-4">
-            <View className="flex-1 h-px bg-slate-100 dark:bg-white/5" />
-            <Text className="text-[10px] font-ubuntu-bold text-slate-400 uppercase tracking-widest text-center">
-              Or continue with
-            </Text>
-            <View className="flex-1 h-px bg-slate-100 dark:bg-white/5" />
-          </View>
-
-          <SocialAuth />
         </View>
 
-        <View className="mb-20 flex-row justify-center gap-1">
-          <Text className="font-ubuntu text-slate-500 dark:text-slate-400">
-            Don't have an account?
-          </Text>
-          <Link href="/register" asChild>
-            <TouchableOpacity>
-              <Text className="font-ubuntu-bold text-primary">Sign Up</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
+        <TouchableOpacity 
+          className="flex-row items-center justify-center py-4"
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={16} color="#64748b" />
+          <Text className="font-ubuntu-bold text-slate-500 dark:text-slate-400 ml-2">Back to Sign In</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
