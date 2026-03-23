@@ -3,11 +3,9 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 import { Header } from "@components/layout/header";
-import { MoreModal } from "@components/modals/moreModal";
 import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function TabsLayout() {
-  const [isMoreModalOpen, setIsMoreModalOpen] = React.useState(false);
   const { isDark } = useColorScheme();
   return (
     <>
@@ -151,20 +149,19 @@ export default function TabsLayout() {
         })}
       />
       <Tabs.Screen
-        name="more/index"
+        name="profileRedirect"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+        }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            setIsMoreModalOpen(true);
+            navigation.navigate("(auth)", { screen: "login" });
           },
         })}
-        options={{
-          title: "More",
-          tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal" size={size} color={color} />,
-        }}
       />
     </Tabs>
-    <MoreModal isOpen={isMoreModalOpen} onClose={() => setIsMoreModalOpen(false)} />
     </>
   );
 }

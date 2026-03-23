@@ -64,11 +64,6 @@ export const Header = () => {
               </TouchableOpacity>
             </Link>
 
-            <Link href="/login" asChild>
-              <TouchableOpacity>
-                <Ionicons name="person-outline" size={24} color={isDark ? "#f8fafc" : "#64748b"} />
-              </TouchableOpacity>
-            </Link>
           </View>
         </View>
 
