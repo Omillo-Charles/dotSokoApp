@@ -5,7 +5,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useColorScheme } from "../hooks/useColorScheme";
+import { useColorScheme as useDeviceColorScheme } from "react-native";
+import { useThemeStore } from "../store/useThemeStore";
 import "../globals.css";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -14,7 +15,10 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
-  const { isDark } = useColorScheme();
+  const deviceColorScheme = useDeviceColorScheme();
+  const { theme } = useThemeStore();
+  const colorScheme = theme === "system" ? (deviceColorScheme ?? "light") : theme;
+  const isDark = colorScheme === "dark";
   
   return (
     <View className={`flex-1 ${isDark ? "dark" : ""}`} style={{ backgroundColor: isDark ? "#020617" : "#ffffff" }}>
