@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useColorScheme as useDeviceColorScheme } from "react-native";
+import { useColorScheme } from "nativewind";
 import { useThemeStore } from "../store/useThemeStore";
 import "../globals.css";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Prevent splash screen from auto hiding
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
@@ -17,27 +17,36 @@ const queryClient = new QueryClient();
 function RootLayoutNav() {
   const deviceColorScheme = useDeviceColorScheme();
   const { theme } = useThemeStore();
-  const colorScheme = theme === "system" ? (deviceColorScheme ?? "light") : theme;
+  const { setColorScheme } = useColorScheme();
+
+  const colorScheme =
+    theme === "system" ? (deviceColorScheme ?? "light") : theme;
+
   const isDark = colorScheme === "dark";
-  
+
+  // Sync NativeWind theme WITHOUT affecting navigation tree
+  useEffect(() => {
+    setColorScheme(colorScheme);
+  }, [colorScheme]);
+
   return (
-    <View className={`flex-1 ${isDark ? "dark" : ""}`} style={{ backgroundColor: isDark ? "#020617" : "#ffffff" }}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: "transparent" },
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="cart" options={{ presentation: "modal", headerShown: false }} />
-        <Stack.Screen name="shop/index" options={{ headerShown: false }} />
-        <Stack.Screen name="shop/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="shop/product/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="deals" options={{ headerShown: false }} />
-        <Stack.Screen name="wishlist" options={{ headerShown: false }} />
-      </Stack>
-    </View>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: isDark ? "#020617" : "#ffffff",
+        },
+      }}
+    >
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="cart" options={{ presentation: "modal" }} />
+      <Stack.Screen name="shop/index" />
+      <Stack.Screen name="shop/[id]" />
+      <Stack.Screen name="shop/product/[id]" />
+      <Stack.Screen name="deals" />
+      <Stack.Screen name="wishlist" />
+    </Stack>
   );
 }
 
@@ -55,9 +64,7 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
   return (
     <QueryClientProvider client={queryClient}>

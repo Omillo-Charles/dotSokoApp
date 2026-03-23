@@ -5,17 +5,12 @@ import { BannerCarousel } from "@components/home/BannerCarousel";
 
 export default function HomeScreen() {
   return (
-    <ScrollView 
-      className="flex-1 bg-background"
+    <ScrollView
+      className="flex-1 bg-white dark:bg-slate-950"
       showsVerticalScrollIndicator={false}
     >
-      {/* Categories Section */}
       <Categories />
-
-      {/* Banner Carousel */}
       <BannerCarousel />
-
-      {/* Bottom padding */}
       <View className="h-20" />
     </ScrollView>
   );
