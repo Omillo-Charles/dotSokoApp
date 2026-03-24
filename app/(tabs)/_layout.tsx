@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 import { Header } from "@components/layout/header";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabsLayout() {
   const { isDark } = useColorScheme();
@@ -155,9 +156,19 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
         listeners={({ navigation }) => ({
-          tabPress: (e) => {
+          tabPress: async (e) => {
             e.preventDefault();
-            navigation.navigate("(auth)", { screen: "login" });
+            try {
+              const token = await AsyncStorage.getItem("accessToken");
+              if (token) {
+                navigation.navigate("profile");
+              } else {
+                navigation.navigate("(auth)" as any, { screen: "login" });
+              }
+            } catch (error) {
+              console.error("Error reading token:", error);
+              navigation.navigate("(auth)" as any, { screen: "login" });
+            }
           },
         })}
       />
