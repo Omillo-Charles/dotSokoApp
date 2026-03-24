@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import api from "../lib/api";
 
 export const useSignIn = () => {
@@ -12,10 +13,15 @@ export const useSignIn = () => {
     },
     onSuccess: async (data) => {
       if (data.success && data.data?.accessToken) {
+        // Store token and user first
         await AsyncStorage.setItem("accessToken", data.data.accessToken);
         await AsyncStorage.setItem("user", JSON.stringify(data.data.user));
-        // Optionally update any global user state/queries here
+
+        // Invalidate queries
         queryClient.invalidateQueries({ queryKey: ["user-me"] });
+
+        // Redirect only after everything is stored
+        router.replace("/(tabs)");
       }
     },
   });
@@ -27,7 +33,7 @@ export const useSignUp = () => {
       const response = await api.post("/auth/sign-up", data);
       return response.data;
     },
-    // Don't log them in directly since they need to verify their email first!
+    // No auto login — user must verify email first
   });
 };
 
@@ -45,6 +51,28 @@ export const useForgotPassword = () => {
     mutationFn: async (data: { email: string }) => {
       const response = await api.post("/auth/forgot-password", data);
       return response.data;
+    },
+  });
+};
+
+export const useSignOut = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      // Call sign out endpoint if your backend has one
+      // await api.post("/auth/sign-out");
+    },
+    onSuccess: async () => {
+      // Clear stored data
+      await AsyncStorage.removeItem("accessToken");
+      await AsyncStorage.removeItem("user");
+
+      // Clear all queries
+      queryClient.clear();
+
+      // Redirect to login
+      router.replace("/(auth)/login");
     },
   });
 };

@@ -15,26 +15,39 @@ export default function LoginScreen() {
   const { isDark } = useColorScheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [validationError, setValidationError] = useState("");
   const signInMutation = useSignIn();
 
+  const iconColor = isDark ? "#94a3b8" : "#64748b";
+
   const handleLogin = () => {
-    if (!email || !password) return;
+    if (!email || !password) {
+      setValidationError("Please fill in all fields.");
+      return;
+    }
+    setValidationError("");
     signInMutation.mutate({ email, password }, {
-      onSuccess: () => {
-        router.replace("/(tabs)");
-      },
+      // ← no onSuccess here, hook handles redirect
       onError: (error: any) => {
-        if (error.response?.status === 401 && error.friendlyMessage?.toLowerCase().includes("verify")) {
-          router.push({ pathname: "/(auth)/verify-email" as any, params: { email } });
+        console.log("Login error:", JSON.stringify(error, null, 2));
+        if (
+          error.response?.status === 401 &&
+          error.friendlyMessage?.toLowerCase().includes("verify")
+        ) {
+          router.push({
+            pathname: "/(auth)/verify-email" as any,
+            params: { email },
+          });
         }
-      }
+      },
     });
   };
 
   return (
     <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
+      {/* Header */}
       <View className="px-4 py-4 flex-row items-center justify-between bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.back()}
           className="p-2 -ml-2"
         >
@@ -46,10 +59,11 @@ export default function LoginScreen() {
         <View className="w-10" />
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1 px-4 pt-6"
         showsVerticalScrollIndicator={false}
       >
+        {/* Title */}
         <View className="mb-8 px-2">
           <Text className="text-3xl font-ubuntu-bold text-slate-900 dark:text-white tracking-tight">
             Welcome Back
@@ -59,20 +73,32 @@ export default function LoginScreen() {
           </Text>
         </View>
 
+        {/* Form Card */}
         <View className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-white/5 mb-8">
+
+          {/* Validation Error */}
+          {validationError ? (
+            <Text className="text-red-500 font-ubuntu-medium text-sm mb-4 text-center">
+              {validationError}
+            </Text>
+          ) : null}
+
+          {/* API Error */}
           {signInMutation.isError && (
-             <Text className="text-red-500 font-ubuntu-medium text-sm mb-4 text-center">
-               {(signInMutation.error as any)?.friendlyMessage || "Failed to sign in. Please try again."}
-             </Text>
+            <Text className="text-red-500 font-ubuntu-medium text-sm mb-4 text-center">
+              {(signInMutation.error as any)?.friendlyMessage || "Failed to sign in. Please try again."}
+            </Text>
           )}
-          <View className="space-y-4">
+
+          <View className="gap-4">
             <Input
               label="Email Address"
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
-              icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
+              autoCapitalize="none"
+              icon={<Ionicons name="mail-outline" size={20} color={iconColor} />}
             />
 
             <Input
@@ -81,10 +107,11 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
+              autoCapitalize="none"
+              icon={<Ionicons name="lock-closed-outline" size={20} color={iconColor} />}
             />
 
-            <TouchableOpacity 
+            <TouchableOpacity
               className="items-end mb-4"
               onPress={() => router.push("/(auth)/forgot-password")}
             >
@@ -93,14 +120,15 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
 
-            <Button 
-              title="Sign In" 
+            <Button
+              title="Sign In"
               onPress={handleLogin}
               isLoading={signInMutation.isPending}
               icon={<Ionicons name="arrow-forward" size={20} color="#ffffff" />}
             />
           </View>
 
+          {/* Divider */}
           <View className="my-8 flex-row items-center gap-4">
             <View className="flex-1 h-px bg-slate-100 dark:bg-white/5" />
             <Text className="text-[10px] font-ubuntu-bold text-slate-400 uppercase tracking-widest text-center">
@@ -112,6 +140,7 @@ export default function LoginScreen() {
           <SocialAuth />
         </View>
 
+        {/* Register Link */}
         <View className="mb-20 flex-row justify-center gap-1">
           <Text className="font-ubuntu text-slate-500 dark:text-slate-400">
             Don't have an account?
