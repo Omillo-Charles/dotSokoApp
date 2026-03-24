@@ -7,6 +7,7 @@ import { Button } from "@components/ui/button";
 import { SocialAuth } from "@components/auth/socialAuth";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSignUp } from "../../hooks/useAuth";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -15,11 +16,15 @@ export default function RegisterScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const signUpMutation = useSignUp();
 
   const handleRegister = () => {
-    // UI Only for now
-    console.log("Register clicked:", { name, email, password });
-    router.replace("/(tabs)");
+    if (!name || !email || !password) return;
+    signUpMutation.mutate({ name, email, password }, {
+      onSuccess: () => {
+        router.push({ pathname: "/(auth)/verify-email" as any, params: { email } });
+      }
+    });
   };
 
   return (
@@ -51,6 +56,11 @@ export default function RegisterScreen() {
         </View>
 
         <View className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-white/5 mb-8">
+          {signUpMutation.isError && (
+             <Text className="text-red-500 font-ubuntu-medium text-sm mb-4 text-center">
+               {(signUpMutation.error as any)?.friendlyMessage || "Registration failed. Please try again."}
+             </Text>
+          )}
           <View className="space-y-4">
             <Input
               label="Full Name"
@@ -82,6 +92,7 @@ export default function RegisterScreen() {
               <Button 
                 title="Sign Up" 
                 onPress={handleRegister}
+                isLoading={signUpMutation.isPending}
                 icon={<Ionicons name="arrow-forward" size={20} color="#ffffff" />}
               />
             </View>

@@ -1,27 +1,28 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Input } from "@components/ui/input";
 import { Button } from "@components/ui/button";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useForgotPassword } from "../../hooks/useAuth";
+import { useVerifyEmail } from "../../hooks/useAuth";
 
-export default function ForgotPasswordScreen() {
+export default function VerifyEmailScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const emailParam = typeof params.email === 'string' ? params.email : '';
   const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
-  const [email, setEmail] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const forgotPasswordMutation = useForgotPassword();
+  const [email, setEmail] = useState(emailParam);
+  const [otp, setOtp] = useState("");
+  const verifyEmailMutation = useVerifyEmail();
 
-  const handleResetPassword = () => {
-    if (!email) return;
-    setSuccessMessage("");
-    forgotPasswordMutation.mutate({ email }, {
-      onSuccess: (data) => {
-        setSuccessMessage(data.message || "Password reset link sent to your email!");
+  const handleVerify = () => {
+    if (!email || !otp) return;
+    verifyEmailMutation.mutate({ email, otp }, {
+      onSuccess: () => {
+        router.replace("/(auth)/login");
       }
     });
   };
@@ -30,13 +31,13 @@ export default function ForgotPasswordScreen() {
     <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
       <View className="px-4 py-4 flex-row items-center justify-between bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
         <TouchableOpacity 
-          onPress={() => router.back()}
+          onPress={() => router.replace("/(auth)/login")}
           className="p-2 -ml-2"
         >
           <Ionicons name="arrow-back" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
         </TouchableOpacity>
         <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white">
-          Reset Password
+          Verify Email
         </Text>
         <View className="w-10" />
       </View>
@@ -47,24 +48,24 @@ export default function ForgotPasswordScreen() {
       >
         <View className="mb-8 px-2">
           <Text className="text-3xl font-ubuntu-bold text-slate-900 dark:text-white tracking-tight">
-            Forgot Password?
+            Check Your Email
           </Text>
           <Text className="text-base font-ubuntu text-slate-500 dark:text-slate-400 mt-2">
-            Enter the email address associated with your account and we'll send you a link to reset your password.
+            We sent an OTP verification code to your email. Enter it below to activate your account.
           </Text>
         </View>
 
         <View className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-white/5 mb-8">
-          {forgotPasswordMutation.isError && (
+          {verifyEmailMutation.isError && (
              <Text className="text-red-500 font-ubuntu-medium text-sm mb-4 text-center">
-               {(forgotPasswordMutation.error as any)?.friendlyMessage || "Failed to send reset link. Please try again."}
+               {(verifyEmailMutation.error as any)?.friendlyMessage || (verifyEmailMutation.error as any)?.message || "Verification failed. Please try again."}
              </Text>
           )}
-          {successMessage ? (
+          {verifyEmailMutation.isSuccess && (
              <Text className="text-emerald-500 font-ubuntu-medium text-sm mb-4 text-center">
-               {successMessage}
+               Email verified successfully!
              </Text>
-          ) : null}
+          )}
           <View className="space-y-4">
             <Input
               label="Email Address"
@@ -74,13 +75,21 @@ export default function ForgotPasswordScreen() {
               keyboardType="email-address"
               icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
             />
+            <Input
+              label="OTP Code"
+              placeholder="Enter 6-digit OTP"
+              value={otp}
+              onChangeText={setOtp}
+              keyboardType="numeric"
+              icon={<Ionicons name="keypad" size={20} color="#64748b" />}
+            />
 
             <View className="mt-4">
               <Button 
-                title="Send Reset Link" 
-                onPress={handleResetPassword}
-                isLoading={forgotPasswordMutation.isPending}
-                icon={<Ionicons name="mail-unread-outline" size={20} color="#ffffff" />}
+                title="Verify Account" 
+                onPress={handleVerify}
+                isLoading={verifyEmailMutation.isPending}
+                icon={<Ionicons name="checkmark-circle-outline" size={20} color="#ffffff" />}
               />
             </View>
           </View>
@@ -88,10 +97,9 @@ export default function ForgotPasswordScreen() {
 
         <TouchableOpacity 
           className="flex-row items-center justify-center py-4"
-          onPress={() => router.back()}
+          onPress={() => router.replace("/(auth)/login")}
         >
-          <Ionicons name="arrow-back" size={16} color="#64748b" />
-          <Text className="font-ubuntu-bold text-slate-500 dark:text-slate-400 ml-2">Back to Sign In</Text>
+          <Text className="font-ubuntu-bold text-slate-500 dark:text-slate-400">Return to Sign In</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

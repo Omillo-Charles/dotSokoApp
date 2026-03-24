@@ -7,6 +7,7 @@ import { Button } from "@components/ui/button";
 import { SocialAuth } from "@components/auth/socialAuth";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSignIn } from "../../hooks/useAuth";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -14,11 +15,20 @@ export default function LoginScreen() {
   const { isDark } = useColorScheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const signInMutation = useSignIn();
 
   const handleLogin = () => {
-    // UI Only for now
-    console.log("Login clicked:", { email, password });
-    router.replace("/(tabs)");
+    if (!email || !password) return;
+    signInMutation.mutate({ email, password }, {
+      onSuccess: () => {
+        router.replace("/(tabs)");
+      },
+      onError: (error: any) => {
+        if (error.response?.status === 401 && error.friendlyMessage?.toLowerCase().includes("verify")) {
+          router.push({ pathname: "/(auth)/verify-email" as any, params: { email } });
+        }
+      }
+    });
   };
 
   return (
@@ -50,6 +60,11 @@ export default function LoginScreen() {
         </View>
 
         <View className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-white/5 mb-8">
+          {signInMutation.isError && (
+             <Text className="text-red-500 font-ubuntu-medium text-sm mb-4 text-center">
+               {(signInMutation.error as any)?.friendlyMessage || "Failed to sign in. Please try again."}
+             </Text>
+          )}
           <View className="space-y-4">
             <Input
               label="Email Address"
@@ -81,6 +96,7 @@ export default function LoginScreen() {
             <Button 
               title="Sign In" 
               onPress={handleLogin}
+              isLoading={signInMutation.isPending}
               icon={<Ionicons name="arrow-forward" size={20} color="#ffffff" />}
             />
           </View>

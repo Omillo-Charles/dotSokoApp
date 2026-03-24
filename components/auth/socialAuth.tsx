@@ -1,7 +1,16 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQueryClient } from "@tanstack/react-query";
+import api from "../../lib/api";
+
+// Required for web browser to work correctly
+WebBrowser.maybeCompleteAuthSession();
 
 const GoogleIcon = () => (
   <Svg viewBox="0 0 24 24" style={{ width: 20, height: 20 }}>
@@ -25,24 +34,70 @@ const GoogleIcon = () => (
 );
 
 export const SocialAuth: React.FC = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [loadingProvider, setLoadingProvider] = useState<"google" | "github" | null>(null);
+
+  const handleSocialAuth = async (provider: "google" | "github") => {
+    try {
+      setLoadingProvider(provider);
+      const redirectUrl = Linking.createURL("oauth-callback");
+      const baseUrl = api.defaults.baseURL || "http://localhost:5500/api/v1";
+      const authUrl = `${baseUrl}/auth/${provider}?redirect_to=${encodeURIComponent(redirectUrl)}`;
+
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+
+      if (result.type === "success" && result.url) {
+        const parsed = Linking.parse(result.url);
+        const token = parsed.queryParams?.token;
+        const userStr = parsed.queryParams?.user;
+
+        if (token && userStr) {
+          await AsyncStorage.setItem("accessToken", token as string);
+          await AsyncStorage.setItem("user", userStr as string);
+          queryClient.invalidateQueries({ queryKey: ["user-me"] });
+          router.replace("/(tabs)");
+        }
+      }
+    } catch (error) {
+      console.error(`[Social Auth] ${provider} error:`, error);
+    } finally {
+      setLoadingProvider(null);
+    }
+  };
+
   return (
     <View className="flex-row gap-4 mt-4">
       <TouchableOpacity
         className="flex-1 flex-row items-center justify-center gap-3 py-4 border border-border rounded-2xl bg-background"
         activeOpacity={0.7}
-        onPress={() => console.log('Google login clicked')}
+        disabled={loadingProvider !== null}
+        onPress={() => handleSocialAuth("google")}
       >
-        <GoogleIcon />
-        <Text className="font-ubuntu-bold text-foreground">Google</Text>
+        {loadingProvider === "google" ? (
+          <ActivityIndicator size="small" color="#64748b" />
+        ) : (
+          <>
+            <GoogleIcon />
+            <Text className="font-ubuntu-bold text-foreground">Google</Text>
+          </>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity
         className="flex-1 flex-row items-center justify-center gap-3 py-4 border border-border rounded-2xl bg-background"
         activeOpacity={0.7}
-        onPress={() => console.log('GitHub login clicked')}
+        disabled={loadingProvider !== null}
+        onPress={() => handleSocialAuth("github")}
       >
-        <Ionicons name="logo-github" size={20} color="#0f172a" />
-        <Text className="font-ubuntu-bold text-foreground">GitHub</Text>
+        {loadingProvider === "github" ? (
+          <ActivityIndicator size="small" color="#64748b" />
+        ) : (
+          <>
+            <Ionicons name="logo-github" size={20} color="#0f172a" style={{ color: "black" }} className="dark:color-white" />
+            <Text className="font-ubuntu-bold text-foreground">GitHub</Text>
+          </>
+        )}
       </TouchableOpacity>
     </View>
   );
