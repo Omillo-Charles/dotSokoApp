@@ -13,8 +13,8 @@ const CartItemCard = ({ item }: { item: CartItem }) => {
   return (
     <View className="flex-row items-center p-4 bg-white dark:bg-slate-900 rounded-3xl mb-4 shadow-sm border border-slate-100 dark:border-white/5">
       <View className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-2xl overflow-hidden mr-4">
-        <Image 
-          source={typeof item.image === 'string' ? { uri: item.image } : item.image} 
+        <Image
+          source={typeof item.image === 'string' ? { uri: item.image } : item.image}
           className="w-full h-full"
           resizeMode="cover"
         />
@@ -40,18 +40,18 @@ const CartItemCard = ({ item }: { item: CartItem }) => {
           </Text>
 
           <View className="flex-row items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-2 py-1">
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => updateQuantity(item.id, item.quantity - 1)}
               className="p-1"
             >
               <Ionicons name="remove" size={18} color={isDark ? "#ffffff" : "#0f172a"} />
             </TouchableOpacity>
-            
+
             <Text className="mx-3 text-slate-900 dark:text-white font-ubuntu-bold text-sm">
               {item.quantity}
             </Text>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => updateQuantity(item.id, item.quantity + 1)}
               className="p-1"
             >
@@ -77,7 +77,7 @@ export default function CartScreen() {
   return (
     <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
       <View className="px-4 py-4 flex-row items-center justify-between bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.back()}
           className="p-2 -ml-2"
         >
@@ -89,7 +89,7 @@ export default function CartScreen() {
         <View className="w-10" />
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1 px-4 pt-4"
         showsVerticalScrollIndicator={false}
       >
@@ -98,7 +98,7 @@ export default function CartScreen() {
             {items.map((item) => (
               <CartItemCard key={item.id} item={item} />
             ))}
-            
+
             <TouchableOpacity className="flex-row items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-3xl mb-6 shadow-sm border border-slate-100 dark:border-white/5">
               <View className="flex-row items-center">
                 <Ionicons name="ticket-outline" size={24} color="#f97316" />
@@ -136,7 +136,7 @@ export default function CartScreen() {
             <Text className="text-slate-500 dark:text-slate-400 font-ubuntu text-center px-10 mb-8 leading-6">
               Looks like you haven't added anything to your cart yet.
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => router.push("/shop")}
               className="bg-primary px-10 py-4 rounded-2xl shadow-lg shadow-primary/30"
             >
@@ -147,11 +147,11 @@ export default function CartScreen() {
       </ScrollView>
 
       {items.length > 0 && (
-        <View 
+        <View
           className="p-6 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-white/5 shadow-2xl"
           style={{ paddingBottom: Math.max(insets.bottom, 24) }}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             className="bg-secondary p-5 rounded-2xl flex-row items-center justify-center shadow-lg shadow-secondary/20"
             activeOpacity={0.8}
           >
