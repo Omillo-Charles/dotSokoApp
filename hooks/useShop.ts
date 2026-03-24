@@ -21,6 +21,19 @@ export const useShop = (idOrHandle: string) => {
   });
 };
 
+export const useMyShop = () => {
+  return useQuery({
+    queryKey: ['my-shop'],
+    queryFn: async () => {
+      const response = await api.get('/shops/my-shop');
+      const data = response.data.data ?? null;
+      if (data && data.id && !data._id) data._id = data.id;
+      return data;
+    },
+    staleTime: 0,
+  });
+};
+
 export const useShopProducts = (idOrHandle: string, params?: { limit?: number; minPrice?: number; maxPrice?: number }) => {
   return useQuery({
     queryKey: ['shop-products', idOrHandle, params],

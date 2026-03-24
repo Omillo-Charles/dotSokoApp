@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,13 +8,23 @@ import { useThemeStore } from "../store/useThemeStore";
 import { useColorScheme } from "nativewind";
 import { Button } from "@components/ui/button";
 import { useSignOut } from "../hooks/useAuth";
+import { useMyShop } from "../hooks/useShop";
+import { RefreshControl } from "react-native";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const signOutMutation = useSignOut();
+   const signOutMutation = useSignOut();
+  const { data: myShop, isLoading: isShopLoading, refetch: refetchShop } = useMyShop();
+
+  // Force refetch when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      refetchShop();
+    }, [refetchShop])
+  );
 
   const [user, setUser] = useState<{ id: string; name: string; email: string; avatar?: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +72,17 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        className="flex-1" 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={isShopLoading} 
+            onRefresh={refetchShop}
+            tintColor={isDark ? "#ffffff" : "#0f172a"}
+          />
+        }
+      >
         {/* User Info Section */}
         <View className="items-center py-8">
           <View className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 items-center justify-center mb-4 overflow-hidden border-4 border-white dark:border-slate-800 shadow-sm">
@@ -117,6 +137,22 @@ export default function ProfileScreen() {
             isDark={isDark}
             onPress={() => {}}
           />
+          <MenuButton
+            icon="storefront-outline"
+            title="Seller Profile"
+            subtitle={isShopLoading ? "Checking shop status..." : "Manage your shop and products"}
+            isDark={isDark}
+            loading={isShopLoading}
+            onPress={() => {
+              if (isShopLoading) return;
+              const shopId = myShop?.id || myShop?._id;
+              if (shopId) {
+                router.push("/seller/" as any);
+              } else {
+                router.push("/shop/create" as any);
+              }
+            }}
+          />
         </View>
 
         {/* Sign Out Button */}
@@ -147,12 +183,14 @@ function MenuButton({
   subtitle,
   isDark,
   onPress,
+  loading = false,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   subtitle: string;
   isDark: boolean;
   onPress: () => void;
+  loading?: boolean;
 }) {
   return (
     <TouchableOpacity
@@ -170,7 +208,11 @@ function MenuButton({
           {subtitle}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={isDark ? "#475569" : "#cbd5e1"} />
+      {loading ? (
+        <ActivityIndicator size="small" color={isDark ? "#94a3b8" : "#64748b"} />
+      ) : (
+        <Ionicons name="chevron-forward" size={20} color={isDark ? "#475569" : "#cbd5e1"} />
+      )}
     </TouchableOpacity>
   );
 }

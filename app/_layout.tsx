@@ -42,11 +42,13 @@ function RootLayoutNav() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="cart" options={{ presentation: "modal" }} />
       <Stack.Screen name="shop/index" />
+      <Stack.Screen name="shop/create" />
       <Stack.Screen name="shop/[id]" />
       <Stack.Screen name="shop/product/[id]" />
       <Stack.Screen name="deals" />
       <Stack.Screen name="wishlist" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="seller/index" />
     </Stack>
   );
 }
