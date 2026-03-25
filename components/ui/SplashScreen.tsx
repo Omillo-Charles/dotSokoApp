@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Animated, Image } from "react-native";
+import { View, Animated, Image, Text } from "react-native";
 import { useColorScheme } from "nativewind";
 
 interface SplashScreenProps {
@@ -39,10 +39,26 @@ export default function SplashScreen({ onLoaded }: SplashScreenProps) {
             style={{ flex: 1, opacity: fadeAnim }}
             className="flex-1 items-center justify-center bg-slate-950"
         >
-            <Image
-                source={require("../../assets/images/dotsoko.png")}
-                style={{ width: 120, height: 120, resizeMode: "contain", marginBottom: 16 }}
-            />
+            <View className="items-center justify-center flex-1">
+                <Image
+                    source={require("../../assets/images/dotsoko.png")}
+                    style={{ width: 140, height: 140, resizeMode: "contain" }}
+                />
+            </View>
+
+            {/* Ownership Footer (Meta Style) */}
+            <View className="absolute bottom-16 items-center">
+                <Text className="text-slate-500 font-ubuntu text-xs tracking-[1px] mb-1">by</Text>
+                <Text
+                    className="text-white font-ubuntu-bold text-xl tracking-[2px]"
+                    style={{
+                        opacity: 0.9,
+                        textTransform: 'uppercase'
+                    }}
+                >
+                    OMYT3CH
+                </Text>
+            </View>
         </Animated.View>
     );
 }
