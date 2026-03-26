@@ -7,6 +7,7 @@ import { ImageCarousel } from "@/components/media/ImageCarousel";
 import { Image } from "expo-image";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { CommentsModal } from "@/components/modals/CommentsModal";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 92;
@@ -23,7 +24,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   const productId = product._id || product.id;
 
-  // ── Cart state ──────────────────────────────────────────────────────────────
+  // ── Comments modal ──────────────────────────────────────────────────────────
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const isInCart = cartItems.some((item) => item.id === productId);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -89,9 +91,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const cartIconName = justAdded || isInCart ? "cart" : "cart-outline";
 
   return (
-    <View 
-      className="p-4 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-slate-950"
-    >
+    <>
+      <View 
+        className="p-4 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-slate-950"
+      >
       <View className="flex-row">
         {/* Left Column: Avatar */}
         <TouchableOpacity 
@@ -176,10 +179,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Actions Bar (Twitter Style) */}
           <View className="flex-row items-center justify-between mt-1 max-w-[280px]">
-            {/* Comment */}
-            <TouchableOpacity 
-              className="flex-row items-center pr-3 py-1"
-              onPress={() => router.push(`/shop/product/${product._id || product.id}` as any)}
+            {/* Comment — opens modal */}
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 12, paddingVertical: 4 }}
+              onPress={() => setCommentsOpen(true)}
+              activeOpacity={0.7}
             >
               <Ionicons name="chatbubble-outline" size={18} color={isDark ? "#94a3b8" : "#64748b"} />
               <Text className="ml-1 text-slate-500 dark:text-slate-400 font-ubuntu-medium text-[11px]">
@@ -230,5 +234,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </View>
       </View>
     </View>
+
+    <CommentsModal
+      visible={commentsOpen}
+      onClose={() => setCommentsOpen(false)}
+      productId={productId}
+      productName={product.name}
+      initialCount={product.commentsCount || 0}
+    />
+    </>
   );
 };

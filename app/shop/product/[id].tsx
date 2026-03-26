@@ -1,12 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, TextInput, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, Heart, Share2, Plus, Minus, ShieldCheck, Truck, ShoppingCart, MessageSquare, Star, Trash2 } from "lucide-react-native";
+import { ChevronLeft, Heart, Share2, Plus, Minus, ShieldCheck, Truck, ShoppingCart, MessageSquare, Star } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useProduct, useProducts } from "@/hooks/useProducts";
-import { useComments } from "@/hooks/useComments";
-import { useUser } from "@/hooks/useUser";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { GoldCheck, ProductRating } from "@/components/ui/CommonUI";
@@ -84,8 +82,6 @@ export default function ProductDetailScreen() {
   const { isDark } = useColorScheme();
 
   const { data: product, isLoading, error } = useProduct(id as string);
-  const { comments, isLoading: isCommentsLoading, deleteComment, createComment } = useComments(id as string);
-  const { user: currentUser } = useUser();
   const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
 
@@ -98,7 +94,6 @@ export default function ProductDetailScreen() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [commentText, setCommentText] = useState("");
 
   const productImages = useMemo(() => {
     if (!product) return [];
@@ -135,13 +130,6 @@ export default function ProductDetailScreen() {
     const currentImage = productImages[activeImageIndex] || product.image;
     addItem({ id: product._id, name: product.name, price: product.price, image: currentImage, quantity, category: product.category });
     Alert.alert("Success", "Added to Cart!");
-  };
-
-  const handlePostComment = () => {
-    if (!currentUser) return Alert.alert("Notice", "Please login to comment");
-    if (!commentText.trim()) return;
-    createComment({ productId: product._id, content: commentText.trim() });
-    setCommentText("");
   };
 
   if (isLoading) {
@@ -317,63 +305,6 @@ export default function ProductDetailScreen() {
                 </View>
               </View>
             </View>
-          </View>
-        </View>
-
-        {/* Comments Section */}
-        <View className="mb-12">
-          <View className="flex-row items-center justify-between mb-4">
-            <View>
-              <Text className="text-lg font-ubuntu-bold text-slate-900 dark:text-white">Community Feedback</Text>
-              <Text className="text-xs font-ubuntu-bold text-slate-500 mt-0.5">{comments?.length || 0} comments</Text>
-            </View>
-          </View>
-
-          <View className="gap-3">
-            {isCommentsLoading ? (
-              <ActivityIndicator size="small" />
-            ) : comments?.length > 0 ? (
-              comments.map((comment: any) => (
-                <View key={comment._id} className="bg-slate-200/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
-                  <View className="flex-row items-center gap-2.5 mb-2">
-                    <View className="w-7 h-7 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
-                      <Image source={{ uri: comment.user?.avatar || 'https://via.placeholder.com/150' }} className="w-full h-full" />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-xs font-ubuntu-bold text-slate-900 dark:text-white">{comment.user?.name}</Text>
-                      <Text className="text-[9px] font-ubuntu-bold text-slate-500">{new Date(comment.createdAt).toLocaleDateString()}</Text>
-                    </View>
-                    {currentUser && currentUser._id === comment.user?._id && (
-                      <TouchableOpacity onPress={() => deleteComment(comment._id)} className="p-1">
-                        <Trash2 size={14} color="#ef4444" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  <Text className="text-xs font-ubuntu-medium text-slate-600 dark:text-slate-300 leading-relaxed">{comment.content}</Text>
-                </View>
-              ))
-            ) : (
-              <View className="py-10 items-center bg-slate-100 dark:bg-slate-900 rounded-[1.5rem] border border-dashed border-slate-300 dark:border-slate-700">
-                <Text className="text-[11px] font-ubuntu-bold text-slate-500">No comments yet. Be the first!</Text>
-              </View>
-            )}
-
-            {currentUser ? (
-              <View className="flex-row items-center gap-2 mt-2">
-                <TextInput
-                  value={commentText}
-                  onChangeText={setCommentText}
-                  placeholder="Write a comment..."
-                  placeholderTextColor={iconMuted}
-                  className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-xs font-ubuntu text-slate-900 dark:text-white"
-                />
-                <TouchableOpacity onPress={handlePostComment} className="bg-slate-900 dark:bg-white p-2.5 rounded-xl">
-                  <Plus size={16} color={isDark ? "#0f172a" : "#fff"} />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <Text className="text-xs font-ubuntu text-slate-400 mt-2 text-center">Login to comment</Text>
-            )}
           </View>
         </View>
 
