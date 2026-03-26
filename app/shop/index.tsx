@@ -7,15 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useProducts, usePersonalizedFeed } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { useWishlistStore } from "@/store/useWishlistStore";
 
 export default function ShopScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isDark } = useColorScheme();
   const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
-  
-  const { toggleWishlist, isInWishlist } = useWishlistStore();
 
   const { 
     data: products, 
@@ -31,16 +28,6 @@ export default function ShopScreen() {
   const onRefresh = useCallback(() => {
     refetch();
   }, [refetch]);
-
-  const handleToggleWishlist = (product: any) => {
-    toggleWishlist({
-      id: product._id || product.id,
-      name: product.name,
-      price: product.price,
-      image: product.images?.[0] || product.image,
-      category: product.category
-    });
-  };
 
   return (
     <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
@@ -119,8 +106,6 @@ export default function ShopScreen() {
               <ProductCard 
                 key={product._id || product.id} 
                 product={product} 
-                onToggleWishlist={handleToggleWishlist}
-                isInWishlist={isInWishlist(product._id || product.id)}
               />
             ))}
           </View>

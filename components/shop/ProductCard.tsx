@@ -1,32 +1,30 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Dimensions } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, TouchableOpacity, Dimensions, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ImageCarousel } from "@/components/media/ImageCarousel";
 import { Image } from "expo-image";
 import { useCartStore } from "@/store/useCartStore";
+import { useWishlistStore } from "@/store/useWishlistStore";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CONTENT_WIDTH = SCREEN_WIDTH - 92; // 16 (left p) + 48 (avatar) + 12 (mr) + 16 (right p)
+const CONTENT_WIDTH = SCREEN_WIDTH - 92;
 
 interface ProductCardProps {
   product: any;
-  onToggleWishlist?: (product: any) => void;
-  isInWishlist?: boolean;
 }
 
-export const ProductCard = ({ 
-  product, 
-  onToggleWishlist, 
-  isInWishlist = false 
-}: ProductCardProps) => {
+export const ProductCard = ({ product }: ProductCardProps) => {
   const router = useRouter();
   const { isDark } = useColorScheme();
-  const { addItem, items } = useCartStore();
+  const { addItem, items: cartItems } = useCartStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
 
   const productId = product._id || product.id;
-  const isInCart = items.some((item) => item.id === productId);
+
+  // ── Cart state ──────────────────────────────────────────────────────────────
+  const isInCart = cartItems.some((item) => item.id === productId);
   const [justAdded, setJustAdded] = useState(false);
 
   const handleAddToCart = () => {
@@ -42,15 +40,52 @@ export const ProductCard = ({
     setTimeout(() => setJustAdded(false), 1500);
   };
 
+  // ── Like / wishlist state ───────────────────────────────────────────────────
+  const liked = isInWishlist(productId);
+  // Optimistic local count — starts from server value, adjusts for local state
+  const serverCount = product.likesCount || 0;
+  const [localDelta, setLocalDelta] = useState(0); // +1 or -1 relative to server
+  const displayCount = serverCount + localDelta;
+
+  // Heart scale animation
+  const heartScale = useRef(new Animated.Value(1)).current;
+
+  const handleLike = () => {
+    // Animate the heart
+    Animated.sequence([
+      Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true, speed: 50 }),
+      Animated.spring(heartScale, { toValue: 1, useNativeDriver: true, speed: 30 }),
+    ]).start();
+
+    // Toggle wishlist store
+    toggleWishlist({
+      id: productId,
+      name: product.name,
+      price: product.price || 0,
+      image: product.images?.[0] || product.image || null,
+      category: product.category,
+    });
+
+    // Optimistic count update
+    setLocalDelta((prev) => {
+      if (liked) {
+        // was liked → unliking → count goes down, but only if we previously bumped it
+        return prev > 0 ? prev - 1 : prev - 1;
+      } else {
+        // was not liked → liking → count goes up
+        return prev + 1;
+      }
+    });
+  };
+
+  // ── Derived display values ──────────────────────────────────────────────────
   const productPrice = product.price || 0;
   const productImages = product.images || (product.image ? [product.image] : []);
   const shopName = product.shop?.name || product.vendor?.name || "Unknown Shop";
   const shopAvatar = product.shop?.avatar || product.vendor?.avatar || "https://ik.imagekit.io/omytech/defaultAvatar.jpeg";
   const time = product.time || (product.createdAt ? new Date(product.createdAt).toLocaleDateString() : "Now");
 
-  const cartIconColor = justAdded || isInCart
-    ? "#f97316"
-    : (isDark ? "#94a3b8" : "#64748b");
+  const cartIconColor = justAdded || isInCart ? "#f97316" : (isDark ? "#94a3b8" : "#64748b");
   const cartIconName = justAdded || isInCart ? "cart" : "cart-outline";
 
   return (
@@ -160,18 +195,26 @@ export const ProductCard = ({
               </Text>
             </TouchableOpacity>
 
-            {/* Like */}
-            <TouchableOpacity 
-              className="flex-row items-center pr-3 py-1"
-              onPress={() => onToggleWishlist?.(product)}
+            {/* Like / Wishlist — social-style with optimistic count + animation */}
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 12, paddingVertical: 4 }}
+              onPress={handleLike}
+              activeOpacity={0.7}
             >
-              <Ionicons 
-                name={isInWishlist ? "heart" : "heart-outline"} 
-                size={18} 
-                color={isInWishlist ? "#f43f5e" : (isDark ? "#94a3b8" : "#64748b")} 
-              />
-              <Text className="ml-1 text-slate-500 dark:text-slate-400 font-ubuntu-medium text-[11px]">
-                {product.likesCount || 0}
+              <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+                <Ionicons
+                  name={liked ? "heart" : "heart-outline"}
+                  size={18}
+                  color={liked ? "#f43f5e" : (isDark ? "#94a3b8" : "#64748b")}
+                />
+              </Animated.View>
+              <Text
+                style={{
+                  marginLeft: 4, fontSize: 11, fontFamily: 'Ubuntu-Medium',
+                  color: liked ? "#f43f5e" : (isDark ? "#94a3b8" : "#64748b"),
+                }}
+              >
+                {displayCount > 0 ? displayCount : ''}
               </Text>
             </TouchableOpacity>
 

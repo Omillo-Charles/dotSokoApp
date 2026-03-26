@@ -14,43 +14,59 @@ const WishlistCard = ({ item }: { item: WishlistItem }) => {
 
   const handleAddToCart = () => {
     addItem({ ...item, quantity: 1 });
-    // Optional: Show toast or feedback
   };
 
   return (
-    <View className="flex-row items-center p-4 bg-white dark:bg-slate-900 rounded-3xl mb-4 shadow-sm border border-slate-100 dark:border-white/5">
-      <View className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-2xl overflow-hidden mr-4">
-        <Image 
-          source={typeof item.image === 'string' ? { uri: item.image } : item.image} 
-          className="w-full h-full"
+    <View style={{
+      flexDirection: 'row', alignItems: 'center', padding: 16,
+      backgroundColor: isDark ? '#0f172a' : '#ffffff',
+      borderRadius: 24, marginBottom: 16,
+      borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9',
+    }}>
+      {/* Image */}
+      <View style={{
+        width: 96, height: 96, borderRadius: 16, overflow: 'hidden',
+        backgroundColor: isDark ? '#1e293b' : '#f8fafc', marginRight: 16,
+      }}>
+        <Image
+          source={typeof item.image === 'string' ? { uri: item.image } : item.image}
+          style={{ width: '100%', height: '100%' }}
           resizeMode="cover"
         />
       </View>
 
-      <View className="flex-1">
-        <View className="flex-row justify-between items-start mb-1">
-          <Text className="text-slate-900 dark:text-white font-ubuntu-bold text-base flex-1 mr-2" numberOfLines={2}>
+      <View style={{ flex: 1 }}>
+        {/* Name + unlike */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <Text
+            numberOfLines={2}
+            style={{ flex: 1, marginRight: 8, fontFamily: 'Ubuntu-Bold', fontSize: 14, color: isDark ? '#ffffff' : '#0f172a' }}
+          >
             {item.name}
           </Text>
-          <TouchableOpacity onPress={() => toggleWishlist(item)}>
-            <Ionicons name="heart" size={24} color="#f43f5e" />
+          <TouchableOpacity onPress={() => toggleWishlist(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="heart" size={22} color="#f43f5e" />
           </TouchableOpacity>
         </View>
 
-        <Text className="text-slate-500 dark:text-slate-400 font-ubuntu text-sm mb-3">
-          {item.category || "Item"}
+        {/* Category */}
+        <Text style={{ fontFamily: 'Ubuntu-Regular', fontSize: 12, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 12 }}>
+          {item.category || 'Item'}
         </Text>
 
-        <View className="flex-row justify-between items-center">
-          <Text className="text-primary font-ubuntu-bold text-lg">
-            Ksh {item.price.toLocaleString()}
+        {/* Price + add to cart */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontFamily: 'Ubuntu-Bold', fontSize: 16, color: '#f97316' }}>
+            KES {item.price.toLocaleString()}
           </Text>
-
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleAddToCart}
-            className="bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-xl"
+            style={{
+              backgroundColor: isDark ? 'rgba(249,115,22,0.15)' : 'rgba(249,115,22,0.1)',
+              paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
+            }}
           >
-            <Text className="text-primary font-ubuntu-bold text-xs uppercase">
+            <Text style={{ fontFamily: 'Ubuntu-Bold', fontSize: 11, color: '#f97316', textTransform: 'uppercase' }}>
               Add to Cart
             </Text>
           </TouchableOpacity>
