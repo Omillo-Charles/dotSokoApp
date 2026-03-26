@@ -11,51 +11,62 @@ const CartItemCard = ({ item }: { item: CartItem }) => {
   const { isDark } = useColorScheme();
 
   return (
-    <View className="flex-row items-center p-4 bg-white dark:bg-slate-900 rounded-3xl mb-4 shadow-sm border border-slate-100 dark:border-white/5">
-      <View className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-2xl overflow-hidden mr-4">
+    <View style={{
+      flexDirection: 'row', alignItems: 'center', padding: 16,
+      backgroundColor: isDark ? '#0f172a' : '#ffffff',
+      borderRadius: 24, marginBottom: 16,
+      borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9',
+    }}>
+      {/* Product image */}
+      <View style={{
+        width: 96, height: 96, borderRadius: 16, overflow: 'hidden',
+        backgroundColor: isDark ? '#1e293b' : '#f8fafc', marginRight: 16,
+      }}>
         <Image
           source={typeof item.image === 'string' ? { uri: item.image } : item.image}
-          className="w-full h-full"
+          style={{ width: '100%', height: '100%' }}
           resizeMode="cover"
         />
       </View>
 
-      <View className="flex-1">
-        <View className="flex-row justify-between items-start mb-1">
-          <Text className="text-slate-900 dark:text-white font-ubuntu-bold text-base flex-1 mr-2" numberOfLines={2}>
+      <View style={{ flex: 1 }}>
+        {/* Name + delete */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <Text
+            numberOfLines={2}
+            style={{ flex: 1, marginRight: 8, fontFamily: 'Ubuntu-Bold', fontSize: 14, color: isDark ? '#ffffff' : '#0f172a' }}
+          >
             {item.name}
           </Text>
-          <TouchableOpacity onPress={() => removeItem(item.id)}>
-            <Ionicons name="trash-outline" size={20} color="#f43f5e" />
+          <TouchableOpacity onPress={() => removeItem(item.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="trash-outline" size={18} color="#f43f5e" />
           </TouchableOpacity>
         </View>
 
-        <Text className="text-slate-500 dark:text-slate-400 font-ubuntu text-sm mb-3">
-          {item.category || "Item"}
+        {/* Category */}
+        <Text style={{ fontFamily: 'Ubuntu-Regular', fontSize: 12, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 12 }}>
+          {item.category || 'Item'}
         </Text>
 
-        <View className="flex-row justify-between items-center">
-          <Text className="text-primary font-ubuntu-bold text-lg">
-            Ksh {item.price.toLocaleString()}
+        {/* Price + quantity controls */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontFamily: 'Ubuntu-Bold', fontSize: 16, color: '#f97316' }}>
+            KES {item.price.toLocaleString()}
           </Text>
 
-          <View className="flex-row items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-2 py-1">
-            <TouchableOpacity
-              onPress={() => updateQuantity(item.id, item.quantity - 1)}
-              className="p-1"
-            >
-              <Ionicons name="remove" size={18} color={isDark ? "#ffffff" : "#0f172a"} />
+          <View style={{
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
+            borderRadius: 12, paddingHorizontal: 4, paddingVertical: 2,
+          }}>
+            <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity - 1)} style={{ padding: 6 }}>
+              <Ionicons name="remove" size={16} color={isDark ? '#ffffff' : '#0f172a'} />
             </TouchableOpacity>
-
-            <Text className="mx-3 text-slate-900 dark:text-white font-ubuntu-bold text-sm">
+            <Text style={{ marginHorizontal: 10, fontFamily: 'Ubuntu-Bold', fontSize: 13, color: isDark ? '#ffffff' : '#0f172a', minWidth: 16, textAlign: 'center' }}>
               {item.quantity}
             </Text>
-
-            <TouchableOpacity
-              onPress={() => updateQuantity(item.id, item.quantity + 1)}
-              className="p-1"
-            >
-              <Ionicons name="add" size={18} color={isDark ? "#ffffff" : "#0f172a"} />
+            <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity + 1)} style={{ padding: 6 }}>
+              <Ionicons name="add" size={16} color={isDark ? '#ffffff' : '#0f172a'} />
             </TouchableOpacity>
           </View>
         </View>

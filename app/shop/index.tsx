@@ -7,7 +7,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useProducts, usePersonalizedFeed } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 
 export default function ShopScreen() {
@@ -16,7 +15,6 @@ export default function ShopScreen() {
   const { isDark } = useColorScheme();
   const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
   
-  const { addItem: addToCart } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
 
   const { 
@@ -33,17 +31,6 @@ export default function ShopScreen() {
   const onRefresh = useCallback(() => {
     refetch();
   }, [refetch]);
-
-  const handleAddToCart = (product: any) => {
-    addToCart({
-      id: product._id || product.id,
-      name: product.name,
-      price: product.price,
-      image: product.images?.[0] || product.image,
-      category: product.category,
-      quantity: 1
-    });
-  };
 
   const handleToggleWishlist = (product: any) => {
     toggleWishlist({
@@ -132,7 +119,6 @@ export default function ShopScreen() {
               <ProductCard 
                 key={product._id || product.id} 
                 product={product} 
-                onAddToCart={handleAddToCart}
                 onToggleWishlist={handleToggleWishlist}
                 isInWishlist={isInWishlist(product._id || product.id)}
               />

@@ -90,7 +90,9 @@ export default function ProductDetailScreen() {
   const { toggleWishlist, isInWishlist } = useWishlistStore();
 
   const { data: productsData, isLoading: isProductsLoading } = useProducts(
-    product?.category ? { cat: product.category, limit: 11 } : { limit: 11 }
+    product?.category
+      ? { cat: product.category, limit: 13 }
+      : { limit: 13 },
   );
 
   const [quantity, setQuantity] = useState(1);
@@ -116,7 +118,9 @@ export default function ProductDetailScreen() {
 
   const recommendedProducts = useMemo(() => {
     if (!productsData || !product) return [];
-    return productsData.filter((p: any) => p._id !== product._id).slice(0, 10);
+    return productsData
+      .filter((p: any) => (p._id || p.id) !== product._id)
+      .slice(0, 12);
   }, [productsData, product]);
 
   const formatPrice = (price: number) =>
@@ -378,40 +382,96 @@ export default function ProductDetailScreen() {
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-lg font-ubuntu-bold text-slate-900 dark:text-white">Recommended for You</Text>
             <TouchableOpacity onPress={() => router.push("/shop" as any)}>
-              <Text className="text-xs font-ubuntu-bold text-amber-500">View All</Text>
+              <Text className="text-xs font-ubuntu-bold text-primary">View All</Text>
             </TouchableOpacity>
           </View>
+
           <View className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] overflow-hidden shadow-sm">
             {isProductsLoading ? (
-              <ActivityIndicator size="small" style={{ padding: 20 }} />
+              <View className="p-8 items-center gap-3">
+                {[1, 2, 3].map(i => (
+                  <View key={i} className="w-full h-24 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+                ))}
+              </View>
             ) : recommendedProducts.length > 0 ? (
-              recommendedProducts.map((p: any, index: number) => (
-                <TouchableOpacity
-                  key={p._id}
-                  onPress={() => router.push(`/shop/product/${p._id}` as any)}
-                  className={`p-4 flex-row gap-4 items-start ${index !== recommendedProducts.length - 1 ? 'border-b border-slate-100 dark:border-slate-800' : ''}`}
-                >
-                  <View className="w-24 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 items-center justify-center">
-                    <Image source={{ uri: p.image }} style={{ width: '100%', aspectRatio: 1 }} resizeMode="cover" />
-                  </View>
-                  <View className="flex-1 justify-between py-0.5">
-                    <View>
-                      <View className="flex-row items-center justify-between mb-1">
-                        <Text className="text-[13px] font-ubuntu-bold text-slate-900 dark:text-white flex-1 mr-2" numberOfLines={1}>{p.name}</Text>
-                        <Text className="text-xs font-ubuntu-bold text-slate-900 dark:text-white">{formatPrice(p.price)}</Text>
+              recommendedProducts.map((p: any, index: number) => {
+                const pid = p._id || p.id;
+                const img = p.image || p.images?.[0];
+                return (
+                  <TouchableOpacity
+                    key={pid}
+                    onPress={() => router.push(`/shop/product/${pid}` as any)}
+                    style={{
+                      padding: 16,
+                      flexDirection: 'row',
+                      gap: 16,
+                      alignItems: 'flex-start',
+                      borderBottomWidth: index !== recommendedProducts.length - 1 ? 1 : 0,
+                      borderBottomColor: isDark ? '#1e293b' : '#f1f5f9',
+                    }}
+                  >
+                    {/* Image container — rounded + overflow:hidden clips image, matches web's rounded-2xl overflow-hidden border */}
+                    <View style={{
+                      width: 96,
+                      borderRadius: 16,
+                      overflow: 'hidden',
+                      borderWidth: 1,
+                      borderColor: isDark ? '#1e293b' : '#e2e8f0',
+                      flexShrink: 0,
+                      backgroundColor: isDark ? '#020617' : '#f8fafc',
+                    }}>
+                      <Image
+                        source={{ uri: img }}
+                        style={{ width: '100%', aspectRatio: 1 }}
+                        resizeMode="cover"
+                      />
+                    </View>
+
+                    {/* Content */}
+                    <View style={{ flex: 1, minWidth: 0, paddingVertical: 2 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
+                        <Text
+                          className="font-ubuntu-bold text-slate-900 dark:text-white"
+                          style={{ fontSize: 13, flex: 1 }}
+                          numberOfLines={1}
+                        >
+                          {p.name}
+                        </Text>
+                        <Text className="font-ubuntu-bold text-primary" style={{ fontSize: 12, flexShrink: 0 }}>
+                          {formatPrice(p.price)}
+                        </Text>
                       </View>
-                      <Text className="text-[11px] font-ubuntu-medium text-slate-500 dark:text-slate-400" numberOfLines={2}>{p.description}</Text>
+
+                      <Text
+                        className="font-ubuntu-medium text-slate-500 dark:text-slate-400"
+                        style={{ fontSize: 11, marginBottom: 8 }}
+                        numberOfLines={2}
+                      >
+                        {p.description}
+                      </Text>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Heart size={12} color={iconMuted} />
+                          <Text className="font-ubuntu-bold text-slate-500" style={{ fontSize: 10 }}>{p.likesCount || 0}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <MessageSquare size={12} color={iconMuted} />
+                          <Text className="font-ubuntu-bold text-slate-500" style={{ fontSize: 10 }}>{p.commentsCount || 0}</Text>
+                        </View>
+                        {p.rating > 0 && (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <Star size={12} color="#f59e0b" fill="#f59e0b" />
+                            <Text className="font-ubuntu-bold text-amber-500" style={{ fontSize: 10 }}>{p.rating}</Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
-                    <View className="flex-row items-center gap-3 mt-2">
-                      <View className="flex-row items-center gap-1"><Heart size={12} color={iconMuted} /><Text className="text-[10px] font-ubuntu-bold text-slate-500">{p.likesCount || 0}</Text></View>
-                      <View className="flex-row items-center gap-1"><MessageSquare size={12} color={iconMuted} /><Text className="text-[10px] font-ubuntu-bold text-slate-500">{p.commentsCount || 0}</Text></View>
-                      {p.rating > 0 && <View className="flex-row items-center gap-1"><Star size={12} color="#f59e0b" fill="#f59e0b" /><Text className="text-[10px] font-ubuntu-bold text-amber-500">{p.rating}</Text></View>}
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))
+                  </TouchableOpacity>
+                );
+              })
             ) : (
-              <View className="p-8 items-center">
+              <View className="p-12 items-center">
                 <Text className="text-sm font-ubuntu-medium text-slate-500 italic">No similar products</Text>
               </View>
             )}

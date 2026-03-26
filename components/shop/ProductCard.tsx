@@ -1,39 +1,45 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Share, Dimensions } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ImageCarousel } from "@/components/media/ImageCarousel";
 import { Image } from "expo-image";
+import { useCartStore } from "@/store/useCartStore";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 92; // 16 (left p) + 48 (avatar) + 12 (mr) + 16 (right p)
 
 interface ProductCardProps {
   product: any;
-  onAddToCart?: (product: any) => void;
   onToggleWishlist?: (product: any) => void;
   isInWishlist?: boolean;
 }
 
 export const ProductCard = ({ 
   product, 
-  onAddToCart, 
   onToggleWishlist, 
   isInWishlist = false 
 }: ProductCardProps) => {
   const router = useRouter();
   const { isDark } = useColorScheme();
-  
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out ${product.name} on .Soko! Only KES ${product.price?.toLocaleString()}`,
-        url: `https://dotsoko.com/shop/product/${product._id || product.id}`,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+  const { addItem, items } = useCartStore();
+
+  const productId = product._id || product.id;
+  const isInCart = items.some((item) => item.id === productId);
+  const [justAdded, setJustAdded] = useState(false);
+
+  const handleAddToCart = () => {
+    addItem({
+      id: productId,
+      name: product.name,
+      price: product.price || 0,
+      image: product.images?.[0] || product.image || null,
+      category: product.category,
+      quantity: 1,
+    });
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
   };
 
   const productPrice = product.price || 0;
@@ -41,6 +47,11 @@ export const ProductCard = ({
   const shopName = product.shop?.name || product.vendor?.name || "Unknown Shop";
   const shopAvatar = product.shop?.avatar || product.vendor?.avatar || "https://ik.imagekit.io/omytech/defaultAvatar.jpeg";
   const time = product.time || (product.createdAt ? new Date(product.createdAt).toLocaleDateString() : "Now");
+
+  const cartIconColor = justAdded || isInCart
+    ? "#f97316"
+    : (isDark ? "#94a3b8" : "#64748b");
+  const cartIconName = justAdded || isInCart ? "cart" : "cart-outline";
 
   return (
     <View 
@@ -164,20 +175,13 @@ export const ProductCard = ({
               </Text>
             </TouchableOpacity>
 
-            {/* Cart (Direct Buy) */}
-            <TouchableOpacity 
+            {/* Cart */}
+            <TouchableOpacity
               className="p-1"
-              onPress={() => onAddToCart?.(product)}
+              onPress={handleAddToCart}
+              activeOpacity={0.7}
             >
-              <Ionicons name="cart-outline" size={20} color={isDark ? "#94a3b8" : "#64748b"} />
-            </TouchableOpacity>
-
-            {/* Share */}
-            <TouchableOpacity 
-              className="p-1"
-              onPress={handleShare}
-            >
-              <Ionicons name="share-outline" size={18} color={isDark ? "#94a3b8" : "#64748b"} />
+              <Ionicons name={cartIconName} size={20} color={cartIconColor} />
             </TouchableOpacity>
           </View>
         </View>
