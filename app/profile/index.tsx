@@ -102,7 +102,7 @@ export default function ProfileScreen() {
             title="Settings"
             subtitle="Account preferences and security"
             isDark={isDark}
-            onPress={() => {}}
+            onPress={() => router.push("/profile/settings" as any)}
           />
           <MenuButton
             icon="help-circle-outline"
