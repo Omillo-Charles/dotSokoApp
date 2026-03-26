@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColorScheme } from "nativewind";
 import { useAddresses, Address } from "@/hooks/useAddresses";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 type AddressType = "home" | "work" | "other";
 
 interface FormData {
@@ -27,9 +27,9 @@ const INITIAL_FORM: FormData = {
 };
 
 const TYPE_CONFIG: Record<AddressType, { icon: keyof typeof Ionicons.glyphMap; label: string; color: string; bg: string; darkBg: string }> = {
-  home:  { icon: "home-outline",      label: "Home",  color: "#3b82f6", bg: "rgba(59,130,246,0.1)",  darkBg: "rgba(59,130,246,0.15)" },
-  work:  { icon: "briefcase-outline", label: "Work",  color: "#f59e0b", bg: "rgba(245,158,11,0.1)",  darkBg: "rgba(245,158,11,0.15)" },
-  other: { icon: "location-outline",  label: "Other", color: "#a855f7", bg: "rgba(168,85,247,0.1)",  darkBg: "rgba(168,85,247,0.15)" },
+  home: { icon: "home-outline", label: "Home", color: "#3b82f6", bg: "rgba(59,130,246,0.1)", darkBg: "rgba(59,130,246,0.15)" },
+  work: { icon: "briefcase-outline", label: "Work", color: "#f59e0b", bg: "rgba(245,158,11,0.1)", darkBg: "rgba(245,158,11,0.15)" },
+  other: { icon: "location-outline", label: "Other", color: "#a855f7", bg: "rgba(168,85,247,0.1)", darkBg: "rgba(168,85,247,0.15)" },
 };
 
 // ── Address card ───────────────────────────────────────────────────────────────

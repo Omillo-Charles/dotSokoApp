@@ -3,33 +3,30 @@ import { View, Animated, Image, Text } from "react-native";
 import { useColorScheme } from "nativewind";
 
 interface SplashScreenProps {
-    onLoaded?: () => void; // callback when splash finishes
+    onLoaded?: () => void;
 }
 
 export default function SplashScreen({ onLoaded }: SplashScreenProps) {
     const { setColorScheme } = useColorScheme();
     const [fadeAnim] = useState(new Animated.Value(0));
 
-    // optional: detect system theme
-    const systemColorScheme = "light"; // fallback, or get from react-native useColorScheme()
+
+    const systemColorScheme = "light";
 
     useEffect(() => {
-        // Animate the splash fade-in
         Animated.timing(fadeAnim, {
             toValue: 1,
             duration: 800,
             useNativeDriver: true,
         }).start();
 
-        // Optional: hide splash after delay
         const timer = setTimeout(() => {
             if (onLoaded) onLoaded();
-        }, 2000); // 2s splash
+        }, 2000);
 
         return () => clearTimeout(timer);
     }, []);
 
-    // Optional: sync NativeWind theme
     useEffect(() => {
         setColorScheme(systemColorScheme);
     }, []);
@@ -46,7 +43,6 @@ export default function SplashScreen({ onLoaded }: SplashScreenProps) {
                 />
             </View>
 
-            {/* Ownership Footer (Meta Style) */}
             <View className="absolute bottom-16 items-center">
                 <Text className="text-slate-500 font-ubuntu text-xs tracking-[1px] mb-1">by</Text>
                 <Text
