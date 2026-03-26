@@ -161,7 +161,7 @@ export default function TabsLayout() {
             try {
               const token = await AsyncStorage.getItem("accessToken");
               if (token) {
-                navigation.navigate("profile");
+                navigation.navigate("profile/index" as any);
               } else {
                 navigation.navigate("(auth)" as any, { screen: "login" });
               }

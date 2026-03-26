@@ -11,19 +11,19 @@ const CategoryCard = ({ item }: { item: Category }) => {
 
   return (
     <Link href={item.href as any} asChild>
-      <TouchableOpacity className="mr-4 group">
+      <TouchableOpacity className="mr-4">
         <View className="w-40 h-40 rounded-[24px] overflow-hidden border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900 shadow-sm">
           <Image
             source={item.image}
-            className="w-full h-full"
+            style={{ width: '100%', height: '100%' }}
             resizeMode="cover"
           />
           {/* Icon Badge */}
           <View className="absolute top-2.5 left-2.5 bg-white/90 dark:bg-slate-800/80 backdrop-blur-md p-2 rounded-xl border border-white/20 dark:border-white/10 shadow-sm">
-            <IconComponent 
-              name={item.iconName as any} 
-              size={16} 
-              color={isDark ? "#f8fafc" : "#64748b"} 
+            <IconComponent
+              name={item.iconName as any}
+              size={16}
+              color={isDark ? "#f8fafc" : "#64748b"}
             />
           </View>
         </View>

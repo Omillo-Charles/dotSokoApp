@@ -1,57 +1,37 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useThemeStore } from "../store/useThemeStore";
 import { useColorScheme } from "nativewind";
-import { Button } from "@components/ui/button";
-import { useSignOut } from "../hooks/useAuth";
-import { useMyShop } from "../hooks/useShop";
-import { RefreshControl } from "react-native";
+import { useSignOut } from "@/hooks/useAuth";
+import { useMyShop } from "@/hooks/useShop";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-   const signOutMutation = useSignOut();
+  const signOutMutation = useSignOut();
   const { data: myShop, isLoading: isShopLoading, refetch: refetchShop } = useMyShop();
 
-  // Force refetch when screen gains focus
   useFocusEffect(
-    useCallback(() => {
-      refetchShop();
-    }, [refetchShop])
+    useCallback(() => { refetchShop(); }, [refetchShop])
   );
 
   const [user, setUser] = useState<{ id: string; name: string; email: string; avatar?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userData = await AsyncStorage.getItem("user");
-        if (userData) {
-          setUser(JSON.parse(userData));
-        }
-      } catch (error) {
-        console.error("Failed to load user data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadUser();
+    AsyncStorage.getItem("user").then((data) => {
+      if (data) setUser(JSON.parse(data));
+    }).finally(() => setLoading(false));
   }, []);
-
-  const handleSignOut = () => {
-    signOutMutation.mutate();
-  };
 
   if (loading) {
     return (
-      <View className="flex-1 bg-slate-50 dark:bg-slate-950 items-center justify-center">
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: isDark ? "#020617" : "#f8fafc" }}>
         <ActivityIndicator size="large" color="#3b82f6" />
       </View>
     );
@@ -65,29 +45,23 @@ export default function ProfileScreen() {
           <Ionicons name="arrow-back" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
         </TouchableOpacity>
         <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white">Profile</Text>
-        <View className="w-10 flex-row justify-end">
-          <TouchableOpacity onPress={() => router.push("/(tabs)")}>
-            <Ionicons name="home-outline" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={() => router.push("/(tabs)")}>
+          <Ionicons name="home-outline" size={24} color={isDark ? "#ffffff" : "#0f172a"} />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl 
-            refreshing={isShopLoading} 
-            onRefresh={refetchShop}
-            tintColor={isDark ? "#ffffff" : "#0f172a"}
-          />
+          <RefreshControl refreshing={isShopLoading} onRefresh={refetchShop} tintColor={isDark ? "#ffffff" : "#0f172a"} />
         }
       >
-        {/* User Info Section */}
+        {/* Avatar + name */}
         <View className="items-center py-8">
-          <View className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 items-center justify-center mb-4 overflow-hidden border-4 border-white dark:border-slate-800 shadow-sm">
+          <View className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 items-center justify-center mb-4 overflow-hidden border-4 border-white dark:border-slate-800">
             {user?.avatar ? (
-              <Image source={{ uri: user.avatar }} className="w-full h-full" resizeMode="cover" />
+              <Image source={{ uri: user.avatar }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
             ) : (
               <Ionicons name="person" size={40} color={isDark ? "#475569" : "#94a3b8"} />
             )}
@@ -96,25 +70,25 @@ export default function ProfileScreen() {
             {user?.name || "User"}
           </Text>
           <Text className="text-base font-ubuntu text-slate-500 dark:text-slate-400">
-            {user?.email || "No email available"}
+            {user?.email || ""}
           </Text>
         </View>
 
-        {/* Menu Items */}
+        {/* Menu */}
         <View className="px-4 gap-3 mb-8">
           <MenuButton
             icon="cube-outline"
             title="My Orders"
             subtitle="Track and manage your orders"
             isDark={isDark}
-            onPress={() => {}}
+            onPress={() => router.push("/profile/orders" as any)}
           />
           <MenuButton
             icon="heart-outline"
             title="Wishlist"
             subtitle="View your saved items"
             isDark={isDark}
-            onPress={() => router.push("/wishlist")}
+            onPress={() => router.push("/profile/wishlist" as any)}
           />
           <MenuButton
             icon="location-outline"
@@ -139,14 +113,13 @@ export default function ProfileScreen() {
           />
           <MenuButton
             icon="storefront-outline"
-            title="Seller Profile"
+            title="Seller Dashboard"
             subtitle={isShopLoading ? "Checking shop status..." : "Manage your shop and products"}
             isDark={isDark}
             loading={isShopLoading}
             onPress={() => {
               if (isShopLoading) return;
-              const shopId = myShop?.id || myShop?._id;
-              if (shopId) {
+              if (myShop?.id || myShop?._id) {
                 router.push("/seller/" as any);
               } else {
                 router.push("/shop/create" as any);
@@ -155,10 +128,10 @@ export default function ProfileScreen() {
           />
         </View>
 
-        {/* Sign Out Button */}
+        {/* Sign out */}
         <View className="px-4 mb-12">
           <TouchableOpacity
-            onPress={handleSignOut}
+            onPress={() => signOutMutation.mutate()}
             disabled={signOutMutation.isPending}
             className="w-full h-14 bg-red-50 dark:bg-red-500/10 rounded-2xl flex-row items-center justify-center border border-red-100 dark:border-red-500/20"
           >
@@ -166,7 +139,7 @@ export default function ProfileScreen() {
               <ActivityIndicator color="#ef4444" />
             ) : (
               <>
-                <Ionicons name="log-out-outline" size={20} color="#ef4444" className="mr-2" />
+                <Ionicons name="log-out-outline" size={20} color="#ef4444" />
                 <Text className="text-red-500 font-ubuntu-bold text-base ml-2">Sign Out</Text>
               </>
             )}
@@ -178,12 +151,7 @@ export default function ProfileScreen() {
 }
 
 function MenuButton({
-  icon,
-  title,
-  subtitle,
-  isDark,
-  onPress,
-  loading = false,
+  icon, title, subtitle, isDark, onPress, loading = false,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
@@ -195,18 +163,14 @@ function MenuButton({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="flex-row items-center p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-white/5 active:bg-slate-50 dark:active:bg-slate-800/50"
+      className="flex-row items-center p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-white/5"
     >
       <View className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 items-center justify-center mr-4">
         <Ionicons name={icon} size={24} color={isDark ? "#94a3b8" : "#64748b"} />
       </View>
       <View className="flex-1">
-        <Text className="text-base font-ubuntu-medium text-slate-900 dark:text-white mb-0.5">
-          {title}
-        </Text>
-        <Text className="text-sm font-ubuntu text-slate-500 dark:text-slate-400">
-          {subtitle}
-        </Text>
+        <Text className="text-base font-ubuntu-medium text-slate-900 dark:text-white mb-0.5">{title}</Text>
+        <Text className="text-sm font-ubuntu text-slate-500 dark:text-slate-400">{subtitle}</Text>
       </View>
       {loading ? (
         <ActivityIndicator size="small" color={isDark ? "#94a3b8" : "#64748b"} />

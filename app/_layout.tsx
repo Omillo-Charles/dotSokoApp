@@ -47,7 +47,10 @@ function RootLayoutNav() {
       <Stack.Screen name="shop/product/[id]" />
       <Stack.Screen name="deals" />
       <Stack.Screen name="wishlist" />
-      <Stack.Screen name="profile" />
+      <Stack.Screen name="profile/index" />
+      <Stack.Screen name="profile/orders" />
+      <Stack.Screen name="profile/orders/[id]" />
+      <Stack.Screen name="profile/wishlist" />
       <Stack.Screen name="seller/index" />
     </Stack>
   );
