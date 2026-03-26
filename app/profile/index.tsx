@@ -95,7 +95,7 @@ export default function ProfileScreen() {
             title="Shipping Addresses"
             subtitle="Manage delivery locations"
             isDark={isDark}
-            onPress={() => {}}
+            onPress={() => router.push("/profile/addresses" as any)}
           />
           <MenuButton
             icon="settings-outline"
