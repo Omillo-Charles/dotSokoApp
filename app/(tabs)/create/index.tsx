@@ -274,7 +274,7 @@ export default function CreateScreen() {
     >
       {/* Header */}
       <View style={{
-        paddingTop: insets.top,
+        paddingTop: insets.top + 16,
         paddingHorizontal: 20, paddingBottom: 12,
         backgroundColor: cardBg,
         borderBottomWidth: 1, borderBottomColor: borderColor,

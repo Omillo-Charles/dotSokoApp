@@ -197,7 +197,9 @@ export default function CheckoutScreen() {
     >
       {/* Header */}
       <View style={{
-        paddingTop: insets.top, paddingHorizontal: 16, paddingBottom: 14,
+        paddingTop: insets.top + 16,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
         backgroundColor: cardBg, borderBottomWidth: 1, borderBottomColor: border,
         flexDirection: "row", alignItems: "center",
       }}>

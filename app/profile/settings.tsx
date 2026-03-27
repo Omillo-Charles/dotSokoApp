@@ -273,7 +273,9 @@ export default function SettingsScreen() {
     <View style={{ flex: 1, backgroundColor: isDark ? "#020617" : "#f8fafc" }} >
       {/* Header */}
       <View style={{
-        paddingTop: insets.top, paddingHorizontal: 16, paddingBottom: 14,
+        paddingTop: insets.top + 16,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
         backgroundColor: isDark ? "#020617" : "#ffffff",
         borderBottomWidth: 1, borderBottomColor: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9",
         flexDirection: "row", alignItems: "center",
