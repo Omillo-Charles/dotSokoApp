@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Linking } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Linking, KeyboardAvoidingView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { WebView } from "react-native-webview";
@@ -27,6 +27,7 @@ export default function ContactScreen() {
   };
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
     <View className="flex-1 bg-slate-50/50 dark:bg-slate-950">
       <ScrollView 
         className="flex-1"
@@ -215,5 +216,6 @@ export default function ContactScreen() {
         </View>
       </ScrollView>
     </View>
+    </KeyboardAvoidingView>
   );
 }

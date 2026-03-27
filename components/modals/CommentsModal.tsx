@@ -165,14 +165,14 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
 
         {/* Input bar */}
         <View style={{
-          flexDirection: "row", alignItems: "flex-end", gap: 10,
+          flexDirection: "row", alignItems: "center", gap: 10,
           paddingHorizontal: 16, paddingTop: 12,
           paddingBottom: Math.max(insets.bottom, 16),
           borderTopWidth: 1, borderTopColor: borderColor,
           backgroundColor: isDark ? "#020617" : "#ffffff",
         }}>
           {/* User avatar */}
-          <View style={{ width: 34, height: 34, borderRadius: 17, overflow: "hidden", backgroundColor: isDark ? "#1e293b" : "#f1f5f9", borderWidth: 1, borderColor, flexShrink: 0 }}>
+          <View style={{ width: 36, height: 36, borderRadius: 18, overflow: "hidden", backgroundColor: isDark ? "#1e293b" : "#f1f5f9", borderWidth: 1, borderColor, flexShrink: 0 }}>
             {user?.avatar
               ? <Image source={{ uri: user.avatar }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
               : <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -182,10 +182,11 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
           </View>
 
           <View style={{
-            flex: 1, flexDirection: "row", alignItems: "flex-end",
-            backgroundColor: inputBg, borderRadius: 20,
+            flex: 1, flexDirection: "row", alignItems: "center",
+            backgroundColor: inputBg, borderRadius: 22,
             borderWidth: 1, borderColor,
-            paddingHorizontal: 14, paddingVertical: 10, gap: 8,
+            paddingHorizontal: 14, paddingVertical: 8, gap: 8,
+            minHeight: 44,
           }}>
             <TextInput
               ref={inputRef}
