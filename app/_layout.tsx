@@ -41,6 +41,7 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="cart" options={{ presentation: "modal" }} />
+      <Stack.Screen name="checkout" />
       <Stack.Screen name="shop/index" />
       <Stack.Screen name="shop/create" />
       <Stack.Screen name="shop/[id]" />
