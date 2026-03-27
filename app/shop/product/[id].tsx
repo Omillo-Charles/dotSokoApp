@@ -157,8 +157,8 @@ export default function ProductDetailScreen() {
   const iconMuted = isDark ? "#94a3b8" : "#64748b";
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
-      <View style={{ paddingTop: insets.top }} className="px-4 py-4 flex-row items-center bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5 z-30">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
+      <View className="px-6 py-5 flex-row items-center bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5 z-30">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2 mr-2 rounded-full">
           <ChevronLeft size={24} color={iconColor} />
         </TouchableOpacity>

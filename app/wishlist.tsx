@@ -84,7 +84,7 @@ export default function WishlistScreen() {
 
   return (
     <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
-      <View className="px-4 py-4 flex-row items-center justify-between bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
+      <View className="px-6 py-5 flex-row items-center justify-between bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
         <TouchableOpacity 
           onPress={() => router.back()}
           className="p-2 -ml-2"
