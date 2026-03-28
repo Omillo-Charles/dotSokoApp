@@ -20,7 +20,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const router = useRouter();
   const { isDark } = useColorScheme();
   const { addItem, items: cartItems } = useCartStore();
-  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { toggleWishlist, items: wishlistItems, _hasHydrated } = useWishlistStore();
 
   const productId = product._id || product.id;
 
@@ -28,6 +28,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const isInCart = cartItems.some((item) => item.id === productId);
   const [justAdded, setJustAdded] = useState(false);
+
+  // Read wishlist state directly from items array — avoids calling a function
+  // during render before hydration completes
+  const liked = _hasHydrated && wishlistItems.some((item) => item.id === productId);
 
   const handleAddToCart = () => {
     addItem({
@@ -43,40 +47,22 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   // ── Like / wishlist state ───────────────────────────────────────────────────
-  const liked = isInWishlist(productId);
-  // Optimistic local count — starts from server value, adjusts for local state
-  const serverCount = product.likesCount || 0;
-  const [localDelta, setLocalDelta] = useState(0); // +1 or -1 relative to server
-  const displayCount = serverCount + localDelta;
 
   // Heart scale animation
   const heartScale = useRef(new Animated.Value(1)).current;
 
   const handleLike = () => {
-    // Animate the heart
     Animated.sequence([
       Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true, speed: 50 }),
       Animated.spring(heartScale, { toValue: 1, useNativeDriver: true, speed: 30 }),
     ]).start();
 
-    // Toggle wishlist store
     toggleWishlist({
       id: productId,
       name: product.name,
       price: product.price || 0,
       image: product.images?.[0] || product.image || null,
       category: product.category,
-    });
-
-    // Optimistic count update
-    setLocalDelta((prev) => {
-      if (liked) {
-        // was liked → unliking → count goes down, but only if we previously bumped it
-        return prev > 0 ? prev - 1 : prev - 1;
-      } else {
-        // was not liked → liking → count goes up
-        return prev + 1;
-      }
     });
   };
 
@@ -199,9 +185,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               </Text>
             </TouchableOpacity>
 
-            {/* Like / Wishlist — social-style with optimistic count + animation */}
+            {/* Like / Wishlist — fills for current user, no count */}
             <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 12, paddingVertical: 4 }}
+              style={{ paddingRight: 12, paddingVertical: 4 }}
               onPress={handleLike}
               activeOpacity={0.7}
             >
@@ -212,14 +198,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                   color={liked ? "#f43f5e" : (isDark ? "#94a3b8" : "#64748b")}
                 />
               </Animated.View>
-              <Text
-                style={{
-                  marginLeft: 4, fontSize: 11, fontFamily: 'Ubuntu-Medium',
-                  color: liked ? "#f43f5e" : (isDark ? "#94a3b8" : "#64748b"),
-                }}
-              >
-                {displayCount > 0 ? displayCount : ''}
-              </Text>
             </TouchableOpacity>
 
             {/* Cart */}

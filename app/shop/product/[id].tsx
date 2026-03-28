@@ -83,7 +83,7 @@ export default function ProductDetailScreen() {
 
   const { data: product, isLoading, error } = useProduct(id as string);
   const { addItem } = useCartStore();
-  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { toggleWishlist, items: wishlistItems, _hasHydrated } = useWishlistStore();
 
   const { data: productsData, isLoading: isProductsLoading } = useProducts(
     product?.category
@@ -152,7 +152,7 @@ export default function ProductDetailScreen() {
     );
   }
 
-  const inWishlist = isInWishlist(product._id);
+  const inWishlist = _hasHydrated && wishlistItems.some((item) => item.id === product._id);
   const iconColor = isDark ? "#ffffff" : "#0f172a";
   const iconMuted = isDark ? "#94a3b8" : "#64748b";
 

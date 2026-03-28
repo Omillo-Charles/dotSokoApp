@@ -100,14 +100,12 @@ export default function WishlistScreen() {
       <ScrollView 
         className="flex-1 px-4 pt-4"
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 80 }}
       >
         {items.length > 0 ? (
-          <>
-            {items.map((item) => (
-              <WishlistCard key={item.id} item={item} />
-            ))}
-            <View className="h-20" />
-          </>
+          items.map((item) => (
+            <WishlistCard key={item.id} item={item} />
+          ))
         ) : (
           <View className="flex-1 items-center justify-center pt-28">
             <View className="w-32 h-32 bg-slate-100 dark:bg-slate-900 rounded-full items-center justify-center mb-6">

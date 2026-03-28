@@ -13,45 +13,32 @@ export interface WishlistItem {
 
 interface WishlistState {
   items: WishlistItem[];
+  _hasHydrated: boolean;
+  setHasHydrated: (v: boolean) => void;
   toggleWishlist: (product: WishlistItem) => void;
   removeItem: (id: string) => void;
   isInWishlist: (id: string) => boolean;
   getTotalItems: () => number;
 }
 
-// Custom storage to handle potential Native module missing error in web environments
 const safeStorage = {
   getItem: async (name: string) => {
     try {
-      if (Platform.OS === 'web') {
-        return localStorage.getItem(name);
-      }
+      if (Platform.OS === 'web') return localStorage.getItem(name);
       return await AsyncStorage.getItem(name);
-    } catch (e) {
-      return null;
-    }
+    } catch { return null; }
   },
   setItem: async (name: string, value: string) => {
     try {
-      if (Platform.OS === 'web') {
-        localStorage.setItem(name, value);
-        return;
-      }
+      if (Platform.OS === 'web') { localStorage.setItem(name, value); return; }
       await AsyncStorage.setItem(name, value);
-    } catch (e) {
-      // Fallback silently
-    }
+    } catch {}
   },
   removeItem: async (name: string) => {
     try {
-      if (Platform.OS === 'web') {
-        localStorage.removeItem(name);
-        return;
-      }
+      if (Platform.OS === 'web') { localStorage.removeItem(name); return; }
       await AsyncStorage.removeItem(name);
-    } catch (e) {
-      // Fallback silently
-    }
+    } catch {}
   },
 };
 
@@ -59,33 +46,35 @@ export const useWishlistStore = create<WishlistState>()(
   persist(
     (set, get) => ({
       items: [],
-      
+      _hasHydrated: false,
+
+      setHasHydrated: (v) => set({ _hasHydrated: v }),
+
       toggleWishlist: (product) => {
         const { items } = get();
         const exists = items.find((item) => item.id === product.id);
-        
-        if (exists) {
-          set({ items: items.filter((item) => item.id !== product.id) });
-        } else {
-          set({ items: [...items, product] });
-        }
+        set({ items: exists
+          ? items.filter((item) => item.id !== product.id)
+          : [...items, product]
+        });
       },
-      
+
       removeItem: (id) => {
         set({ items: get().items.filter((item) => item.id !== id) });
       },
-      
+
       isInWishlist: (id) => {
         return get().items.some((item) => item.id === id);
       },
-      
-      getTotalItems: () => {
-        return get().items.length;
-      },
+
+      getTotalItems: () => get().items.length,
     }),
     {
       name: "wishlist-storage",
       storage: createJSONStorage(() => safeStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

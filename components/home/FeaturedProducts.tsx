@@ -15,7 +15,7 @@ const CARD_WIDTH = (width - 48) / 2; // px-4 (16*2) + gap-4 (16) = 48
 function ProductCard({ p, isDark }: { p: any; isDark: boolean }) {
   const router = useRouter();
   const { addItem, items: cartItems } = useCartStore();
-  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { toggleWishlist, items: wishlistItems, _hasHydrated } = useWishlistStore();
 
   const id = p._id || p.id;
   const imageSrc = p.image || p.images?.[0] || "https://ik.imagekit.io/omytech/d8f07aa0-f9cc-4e8c-859a-1c7ec2ffc0e8";
@@ -40,7 +40,7 @@ function ProductCard({ p, isDark }: { p: any; isDark: boolean }) {
   };
 
   // ── Wishlist / like ─────────────────────────────────────────────────────────
-  const liked = isInWishlist(id);
+  const liked = _hasHydrated && wishlistItems.some((item) => item.id === id);
   const heartScale = useRef(new Animated.Value(1)).current;
 
   const handleLike = () => {
