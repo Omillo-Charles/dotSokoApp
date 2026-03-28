@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, Dimensions, Share } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Heart, Share2, Plus, Minus, ShieldCheck, Truck, ShoppingCart, MessageSquare, Star } from "lucide-react-native";
@@ -128,8 +128,21 @@ export default function ProductDetailScreen() {
       return;
     }
     const currentImage = productImages[activeImageIndex] || product.image;
-    addItem({ id: product._id, name: product.name, price: product.price, image: currentImage, quantity, category: product.category });
+    addItem({ id: product.id || product._id, name: product.name, price: product.price, image: currentImage, quantity, category: product.category });
     Alert.alert("Success", "Added to Cart!");
+  };
+
+  const handleShare = async () => {
+    const productId = product.id || product._id;
+    try {
+      await Share.share({
+        title: product.name,
+        message: `Check out ${product.name} on .Soko!\n\nKES ${Number(product.price).toLocaleString()}\n\nhttps://dotsoko.com/shop/product/${productId}`,
+        url: `https://dotsoko.com/shop/product/${productId}`,
+      });
+    } catch (err) {
+      // user cancelled — no action needed
+    }
   };
 
   if (isLoading) {
@@ -152,7 +165,7 @@ export default function ProductDetailScreen() {
     );
   }
 
-  const inWishlist = _hasHydrated && wishlistItems.some((item) => item.id === product._id);
+  const inWishlist = _hasHydrated && wishlistItems.some((item) => item.id === (product.id || product._id));
   const iconColor = isDark ? "#ffffff" : "#0f172a";
   const iconMuted = isDark ? "#94a3b8" : "#64748b";
 
@@ -185,13 +198,13 @@ export default function ProductDetailScreen() {
             </TouchableOpacity>
             <View className="flex-row items-center gap-2">
               <TouchableOpacity
-                onPress={() => toggleWishlist({ id: product._id, name: product.name, price: product.price, image: product.image })}
+                onPress={() => toggleWishlist({ id: product.id || product._id, name: product.name, price: product.price, image: product.image })}
                 className="p-1.5 rounded-full"
                 style={{ backgroundColor: inWishlist ? 'rgba(236, 72, 153, 0.1)' : 'transparent' }}
               >
                 <Heart size={16} color={inWishlist ? "#ec4899" : iconMuted} fill={inWishlist ? "#ec4899" : "transparent"} />
               </TouchableOpacity>
-              <TouchableOpacity className="p-1.5 rounded-full">
+              <TouchableOpacity onPress={handleShare} className="p-1.5 rounded-full">
                 <Share2 size={16} color={iconMuted} />
               </TouchableOpacity>
             </View>
