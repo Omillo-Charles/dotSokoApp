@@ -53,19 +53,12 @@ export const useWishlistStore = create<WishlistState>()(
       toggleWishlist: (product) => {
         const { items } = get();
         const exists = items.find((item) => item.id === product.id);
-        set({ items: exists
-          ? items.filter((item) => item.id !== product.id)
-          : [...items, product]
-        });
+        set({ items: exists ? items.filter((item) => item.id !== product.id) : [...items, product] });
       },
 
-      removeItem: (id) => {
-        set({ items: get().items.filter((item) => item.id !== id) });
-      },
+      removeItem: (id) => set({ items: get().items.filter((item) => item.id !== id) }),
 
-      isInWishlist: (id) => {
-        return get().items.some((item) => item.id === id);
-      },
+      isInWishlist: (id) => get().items.some((item) => item.id === id),
 
       getTotalItems: () => get().items.length,
     }),
@@ -78,3 +71,14 @@ export const useWishlistStore = create<WishlistState>()(
     }
   )
 );
+
+/**
+ * Call on sign-out: wipes in-memory state and removes the persisted key.
+ */
+export const clearWishlistStore = async () => {
+  useWishlistStore.setState({ items: [], _hasHydrated: true });
+  try {
+    if (Platform.OS === 'web') localStorage.removeItem("wishlist-storage");
+    else await AsyncStorage.removeItem("wishlist-storage");
+  } catch {}
+};

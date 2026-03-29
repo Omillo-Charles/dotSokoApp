@@ -8,6 +8,7 @@ import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { GoldCheck, ProductRating } from "@/components/ui/CommonUI";
+import { requireAuth } from "@/lib/authGuard";
 
 const screenWidth = Dimensions.get("window").width;
 const MAX_IMAGE_HEIGHT = 520;
@@ -121,8 +122,9 @@ export default function ProductDetailScreen() {
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(price);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
+    if (!(await requireAuth("add items to cart"))) return;
     if (product.sizes?.length > 0 && !selectedSize) {
       Alert.alert("Notice", "Please select a size");
       return;
@@ -198,7 +200,10 @@ export default function ProductDetailScreen() {
             </TouchableOpacity>
             <View className="flex-row items-center gap-2">
               <TouchableOpacity
-                onPress={() => toggleWishlist({ id: product.id || product._id, name: product.name, price: product.price, image: product.image })}
+                onPress={async () => {
+                  if (!(await requireAuth("save items to wishlist"))) return;
+                  toggleWishlist({ id: product.id || product._id, name: product.name, price: product.price, image: product.image });
+                }}
                 className="p-1.5 rounded-full"
                 style={{ backgroundColor: inWishlist ? 'rgba(236, 72, 153, 0.1)' : 'transparent' }}
               >

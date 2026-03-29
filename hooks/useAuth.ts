@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import api from "../lib/api";
+import { clearCartStore } from "../store/useCartStore";
+import { clearWishlistStore } from "../store/useWishlistStore";
 
 export const useSignIn = () => {
   const queryClient = useQueryClient();
@@ -59,19 +61,19 @@ export const useSignOut = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      // Call sign out endpoint if your backend has one
-      // await api.post("/auth/sign-out");
-    },
+    mutationFn: async () => {},
     onSuccess: async () => {
-      // Clear stored data
+      // Clear cart and wishlist — user's data goes with them
+      await clearCartStore();
+      await clearWishlistStore();
+
+      // Clear auth tokens
       await AsyncStorage.removeItem("accessToken");
       await AsyncStorage.removeItem("user");
 
       // Clear all queries
       queryClient.clear();
 
-      // Redirect to login
       router.replace("/(auth)/login");
     },
   });

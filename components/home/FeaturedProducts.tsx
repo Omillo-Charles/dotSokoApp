@@ -7,6 +7,7 @@ import { usePersonalizedFeed } from "@/hooks/useProducts";
 import { useColorScheme } from "nativewind";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { requireAuth } from "@/lib/authGuard";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 48) / 2; // px-4 (16*2) + gap-4 (16) = 48
@@ -26,7 +27,8 @@ function ProductCard({ p, isDark }: { p: any; isDark: boolean }) {
   const isInCart = cartItems.some((item) => item.id === id);
   const [justAdded, setJustAdded] = useState(false);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!(await requireAuth("add items to cart"))) return;
     addItem({
       id,
       name: p.name,
@@ -43,7 +45,8 @@ function ProductCard({ p, isDark }: { p: any; isDark: boolean }) {
   const liked = _hasHydrated && wishlistItems.some((item) => item.id === id);
   const heartScale = useRef(new Animated.Value(1)).current;
 
-  const handleLike = () => {
+  const handleLike = async () => {
+    if (!(await requireAuth("save items to wishlist"))) return;
     Animated.sequence([
       Animated.spring(heartScale, { toValue: 1.5, useNativeDriver: true, speed: 50 }),
       Animated.spring(heartScale, { toValue: 1, useNativeDriver: true, speed: 30 }),

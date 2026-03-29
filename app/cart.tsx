@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCartStore, CartItem } from "../store/useCartStore";
 import { useColorScheme } from "../hooks/useColorScheme";
+import { requireAuth } from "../lib/authGuard";
 
 const CartItemCard = ({ item }: { item: CartItem }) => {
   const { updateQuantity, removeItem } = useCartStore();
@@ -165,7 +166,10 @@ export default function CartScreen() {
           <TouchableOpacity
             className="bg-secondary p-5 rounded-2xl flex-row items-center justify-center shadow-lg shadow-secondary/20"
             activeOpacity={0.8}
-            onPress={() => router.push("/checkout" as any)}
+            onPress={async () => {
+              if (!(await requireAuth("proceed to checkout"))) return;
+              router.push("/checkout" as any);
+            }}
           >
             <Text className="text-white font-ubuntu-bold text-lg mr-2 uppercase tracking-widest">
               Proceed to Checkout

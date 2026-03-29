@@ -8,6 +8,7 @@ import { Image } from "expo-image";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { CommentsModal } from "@/components/modals/CommentsModal";
+import { requireAuth } from "@/lib/authGuard";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 92;
@@ -33,7 +34,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   // during render before hydration completes
   const liked = _hasHydrated && wishlistItems.some((item) => item.id === productId);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!(await requireAuth("add items to cart"))) return;
     addItem({
       id: productId,
       name: product.name,
@@ -51,7 +53,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   // Heart scale animation
   const heartScale = useRef(new Animated.Value(1)).current;
 
-  const handleLike = () => {
+  const handleLike = async () => {
+    if (!(await requireAuth("save items to wishlist"))) return;
     Animated.sequence([
       Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true, speed: 50 }),
       Animated.spring(heartScale, { toValue: 1, useNativeDriver: true, speed: 30 }),
