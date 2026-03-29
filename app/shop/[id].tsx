@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Image,
-  ActivityIndicator, Dimensions, Alert, Share
+  ActivityIndicator, Dimensions, Alert, Share, Modal
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,7 +10,7 @@ import {
   ShoppingBag, Users, Info, ShoppingCart, MessageSquare, Heart
 } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useShop, useShopProducts, useShopReviews, useShopLists, useFollowShop } from "@/hooks/useShop";
+import { useShop, useShopProducts, useShopReviews, useShopLists, useFollowShop, useRateShop } from "@/hooks/useShop";
 import { useUser } from "@/hooks/useUser";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
@@ -27,12 +27,15 @@ export default function ShopDetailScreen() {
   const { isDark } = useColorScheme();
 
   const [activeSection, setActiveSection] = useState<SectionType>('Products');
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
 
   const { data: shop, isLoading, error } = useShop(id as string);
   const { data: productsData = [], isLoading: isProductsLoading } = useShopProducts(id as string);
   const { data: reviewsData = [], isLoading: isReviewsLoading } = useShopReviews(id as string);
   const { data: listData = [], isLoading: isListsLoading } = useShopLists(id as string, activeSection as 'Followers' | 'Following');
   const followMutation = useFollowShop();
+  const rateShopMutation = useRateShop();
   const { user: currentUser } = useUser();
   const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
@@ -76,6 +79,24 @@ export default function ShopDetailScreen() {
       });
     } catch (err) {
       // User cancelled share
+    }
+  };
+
+  const handleRateShop = async (rating: number) => {
+    if (!currentUser) {
+      Alert.alert("Notice", "Please login to rate this shop");
+      return;
+    }
+    if (!shop?._id && !shop?.id) return;
+
+    try {
+      const shopId = shop._id || shop.id;
+      await rateShopMutation.mutateAsync({ shopId, rating });
+      setSelectedRating(rating);
+      setShowRatingModal(false);
+      Alert.alert("Success", "Thank you for rating this shop!");
+    } catch (err: any) {
+      Alert.alert("Error", err.response?.data?.message || "Failed to submit rating");
     }
   };
 
@@ -162,7 +183,16 @@ export default function ShopDetailScreen() {
                   <Text className="text-xs font-ubuntu-bold text-white dark:text-slate-900">Follow</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity className="p-2 rounded-full border border-slate-200 dark:border-slate-700">
+              <TouchableOpacity 
+                onPress={() => {
+                  if (!currentUser) {
+                    Alert.alert("Notice", "Please login to rate this shop");
+                    return;
+                  }
+                  setShowRatingModal(true);
+                }}
+                className="p-2 rounded-full border border-slate-200 dark:border-slate-700"
+              >
                 <Star size={16} color={iconMuted} />
               </TouchableOpacity>
             </View>
@@ -442,6 +472,72 @@ export default function ShopDetailScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Rating Modal */}
+      <Modal
+        visible={showRatingModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowRatingModal(false)}
+      >
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" }}
+          activeOpacity={1}
+          onPress={() => setShowRatingModal(false)}
+        >
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <View style={{
+              backgroundColor: isDark ? "#0f172a" : "#ffffff",
+              borderRadius: 24,
+              padding: 24,
+              width: width - 64,
+              maxWidth: 400,
+            }}>
+              <Text className="text-lg font-ubuntu-bold text-slate-900 dark:text-white mb-2 text-center">
+                Rate {shop?.name}
+              </Text>
+              <Text className="text-sm font-ubuntu text-slate-500 dark:text-slate-400 mb-6 text-center">
+                How would you rate your experience with this shop?
+              </Text>
+
+              <View className="flex-row items-center justify-center gap-3 mb-6">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => handleRateShop(star)}
+                    disabled={rateShopMutation.isPending}
+                    className="p-2"
+                  >
+                    <Star
+                      size={36}
+                      color={selectedRating >= star ? "#fbbf24" : "#cbd5e1"}
+                      fill={selectedRating >= star ? "#fbbf24" : "transparent"}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {rateShopMutation.isPending && (
+                <View className="flex-row items-center justify-center gap-2 mb-4">
+                  <ActivityIndicator size="small" color="#f97316" />
+                  <Text className="text-xs font-ubuntu-bold text-slate-500 uppercase tracking-widest">
+                    Submitting...
+                  </Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                onPress={() => setShowRatingModal(false)}
+                className="bg-slate-100 dark:bg-slate-800 py-3 rounded-xl"
+              >
+                <Text className="text-sm font-ubuntu-bold text-slate-700 dark:text-slate-300 text-center">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
