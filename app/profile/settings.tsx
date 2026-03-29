@@ -232,6 +232,7 @@ export default function SettingsScreen() {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
 
   // Notification toggles (local preference — extend with backend if needed)
   const [notifOrders, setNotifOrders] = useState(true);
@@ -241,6 +242,16 @@ export default function SettingsScreen() {
   useEffect(() => {
     AsyncStorage.getItem("user").then((d) => { if (d) setUser(JSON.parse(d)); });
   }, []);
+
+  // Handle theme change with debounce to prevent rapid re-renders
+  const handleThemeChange = (newTheme: ThemeOption) => {
+    setIsChangingTheme(true);
+    setTheme(newTheme);
+    // Small delay to allow theme to apply smoothly
+    setTimeout(() => {
+      setIsChangingTheme(false);
+    }, 100);
+  };
 
   const themeLabel: Record<ThemeOption, string> = { light: "Light", dark: "Dark", system: "System" };
 
@@ -451,7 +462,7 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <ChangePasswordModal visible={showPasswordModal} onClose={() => setShowPasswordModal(false)} isDark={isDark} />
-      <ThemeModal visible={showThemeModal} onClose={() => setShowThemeModal(false)} current={theme} onSelect={setTheme} isDark={isDark} />
+      <ThemeModal visible={showThemeModal} onClose={() => setShowThemeModal(false)} current={theme} onSelect={handleThemeChange} isDark={isDark} />
     </View>
   );
 }

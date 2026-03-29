@@ -3,9 +3,11 @@ import { ScrollView, View, Text, Pressable, Platform, Alert } from 'react-native
 import { CheckCircle2, X } from 'lucide-react-native';
 import { Star } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function PremiumScreen() {
   const [isAnnual, setIsAnnual] = useState(false);
+  const { isDark } = useColorScheme();
 
   // Mock user for now since we just need to replicate UI
   const user = { isPremium: false, premiumPlan: 'free' };
@@ -95,9 +97,16 @@ export default function PremiumScreen() {
 
   const StatusIcon = ({ status }: { status: boolean | string }) => {
     if (status === true) return <CheckCircle2 size={16} color="#3b82f6" />;
-    if (status === false) return <X size={16} color="#475569" />;
+    if (status === false) return <X size={16} color={isDark ? "#64748b" : "#94a3b8"} />;
     return (
-      <Text className="text-[10px] font-ubuntu-bold uppercase tracking-widest text-foreground/70 text-center">
+      <Text style={{ 
+        fontSize: 10, 
+        fontFamily: 'Ubuntu-Bold', 
+        textTransform: 'uppercase', 
+        letterSpacing: 1.5, 
+        color: isDark ? '#94a3b8' : '#64748b',
+        textAlign: 'center'
+      }}>
         {status as string}
       </Text>
     );
@@ -105,66 +114,101 @@ export default function PremiumScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-background"
+      style={{ flex: 1, backgroundColor: isDark ? '#020617' : '#f8fafc' }}
       contentContainerStyle={{ paddingBottom: 60 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header section translated */}
-      <View className="flex-col gap-6 px-6 pt-8 pb-4">
-        <View className="flex-row items-center gap-4">
-          <View className="flex-1">
-            <Text className="text-3xl font-ubuntu-bold text-foreground tracking-tighter uppercase">
+      {/* Header section */}
+      <View style={{ gap: 24, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ 
+              fontSize: 30, 
+              fontFamily: 'Ubuntu-Bold', 
+              color: isDark ? '#ffffff' : '#0f172a',
+              letterSpacing: -0.5,
+              textTransform: 'uppercase'
+            }}>
               Premium Access
             </Text>
-            <Text className="text-muted-foreground font-ubuntu-medium text-sm mt-1">
+            <Text style={{ 
+              color: isDark ? '#94a3b8' : '#64748b',
+              fontFamily: 'Ubuntu-Medium',
+              fontSize: 14,
+              marginTop: 4
+            }}>
               Elevate your commerce experience
             </Text>
           </View>
         </View>
 
         {/* Custom Toggle */}
-        <View className="self-start flex-row items-center p-1 bg-slate-900 border border-slate-800 rounded-2xl">
+        <View style={{ 
+          alignSelf: 'flex-start',
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 4,
+          backgroundColor: isDark ? '#0f172a' : '#ffffff',
+          borderWidth: 1,
+          borderColor: isDark ? '#1e293b' : '#e2e8f0',
+          borderRadius: 16
+        }}>
           <Pressable
             onPress={() => setIsAnnual(false)}
-            className={`px-6 py-2.5 rounded-xl justify-center ${
-              !isAnnual ? 'bg-[#3b82f6]' : 'bg-transparent'
-            }`}
+            style={{
+              paddingHorizontal: 24,
+              paddingVertical: 10,
+              borderRadius: 12,
+              justifyContent: 'center',
+              backgroundColor: !isAnnual ? '#3b82f6' : 'transparent'
+            }}
           >
-            <Text
-              className={`text-[10px] font-ubuntu-bold uppercase tracking-widest ${
-                !isAnnual ? 'text-white' : 'text-slate-400'
-              }`}
-            >
+            <Text style={{
+              fontSize: 10,
+              fontFamily: 'Ubuntu-Bold',
+              textTransform: 'uppercase',
+              letterSpacing: 1.5,
+              color: !isAnnual ? '#ffffff' : (isDark ? '#64748b' : '#94a3b8')
+            }}>
               Monthly
             </Text>
           </Pressable>
           <Pressable
             onPress={() => setIsAnnual(true)}
-            className={`flex-row items-center px-6 py-2.5 rounded-xl justify-center ${
-              isAnnual ? 'bg-[#3b82f6]' : 'bg-transparent'
-            }`}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 24,
+              paddingVertical: 10,
+              borderRadius: 12,
+              justifyContent: 'center',
+              backgroundColor: isAnnual ? '#3b82f6' : 'transparent'
+            }}
           >
-            <Text
-              className={`text-[10px] font-ubuntu-bold uppercase tracking-widest ${
-                isAnnual ? 'text-white' : 'text-slate-400'
-              }`}
-            >
+            <Text style={{
+              fontSize: 10,
+              fontFamily: 'Ubuntu-Bold',
+              textTransform: 'uppercase',
+              letterSpacing: 1.5,
+              color: isAnnual ? '#ffffff' : (isDark ? '#64748b' : '#94a3b8')
+            }}>
               Annual
             </Text>
-            <Text
-              className={`text-[9px] font-ubuntu-bold ml-1 ${
-                isAnnual ? 'text-white/70' : 'text-slate-500'
-              }`}
-            >
+            <Text style={{
+              fontSize: 9,
+              fontFamily: 'Ubuntu-Bold',
+              marginLeft: 4,
+              color: isAnnual ? 'rgba(255,255,255,0.7)' : (isDark ? '#475569' : '#94a3b8')
+            }}>
               -20%
             </Text>
           </Pressable>
         </View>
       </View>
 
-      <View className="px-6 mt-4">
+      <View style={{ paddingHorizontal: 24, marginTop: 16 }}>
       {/* Pricing Cards Grid */}
-      <View className="flex-col gap-6 mb-16">
+      <View style={{ gap: 24, marginBottom: 64 }}>
         {plans.map((plan, index) => {
           const isCurrentPlan = user?.isPremium
             ? plan.id === (user.premiumPlan?.toLowerCase() || 'premium')
@@ -173,48 +217,107 @@ export default function PremiumScreen() {
           return (
             <View
               key={index}
-              className={`bg-accent/40 p-8 rounded-[2rem] border ${
-                plan.popular ? 'border-primary' : 'border-border'
-              }`}
+              style={{
+                backgroundColor: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(248,250,252,0.8)',
+                padding: 32,
+                borderRadius: 32,
+                borderWidth: 1,
+                borderColor: plan.popular ? '#f97316' : (isDark ? '#1e293b' : '#e2e8f0')
+              }}
             >
-              <View className="flex-row items-center justify-between mb-6">
-                <Text className="text-2xl font-ubuntu-bold uppercase tracking-tighter text-foreground">
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                <Text style={{ 
+                  fontSize: 24, 
+                  fontFamily: 'Ubuntu-Bold', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: -0.5,
+                  color: isDark ? '#ffffff' : '#0f172a'
+                }}>
                   {plan.name}
                 </Text>
                 {plan.popular && (
-                  <View className="flex-row items-center gap-1.5 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
-                    <Star size={10} className="color-primary" />
-                    <Text className="text-[10px] font-ubuntu-bold text-primary uppercase tracking-widest">
+                  <View style={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center', 
+                    gap: 6, 
+                    paddingHorizontal: 12, 
+                    paddingVertical: 4, 
+                    backgroundColor: 'rgba(249,115,22,0.1)', 
+                    borderRadius: 20, 
+                    borderWidth: 1, 
+                    borderColor: 'rgba(249,115,22,0.2)' 
+                  }}>
+                    <Star size={10} color="#f97316" fill="#f97316" />
+                    <Text style={{ 
+                      fontSize: 10, 
+                      fontFamily: 'Ubuntu-Bold', 
+                      color: '#f97316', 
+                      textTransform: 'uppercase', 
+                      letterSpacing: 1.5 
+                    }}>
                       Popular
                     </Text>
                   </View>
                 )}
               </View>
 
-              <View className="flex-row items-baseline gap-2 mb-3">
-                <Text className="text-3xl font-ubuntu-bold tracking-tighter text-foreground">
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+                <Text style={{ 
+                  fontSize: 30, 
+                  fontFamily: 'Ubuntu-Bold', 
+                  letterSpacing: -0.5,
+                  color: isDark ? '#ffffff' : '#0f172a'
+                }}>
                   KES {isAnnual ? plan.price.annual : plan.price.monthly}
                 </Text>
-                <Text className="text-[10px] font-ubuntu-bold uppercase tracking-widest text-muted-foreground opacity-60">
+                <Text style={{ 
+                  fontSize: 10, 
+                  fontFamily: 'Ubuntu-Bold', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: 1.5,
+                  color: isDark ? '#64748b' : '#94a3b8',
+                  opacity: 0.6
+                }}>
                   / {isAnnual ? 'yr' : 'mo'}
                 </Text>
               </View>
 
-              <Text className="text-muted-foreground font-ubuntu-medium text-sm mb-8 leading-relaxed">
+              <Text style={{ 
+                color: isDark ? '#94a3b8' : '#64748b',
+                fontFamily: 'Ubuntu-Medium',
+                fontSize: 14,
+                marginBottom: 32,
+                lineHeight: 22
+              }}>
                 {plan.description}
               </Text>
 
-              <View className="flex-col gap-4 mb-8">
+              <View style={{ gap: 16, marginBottom: 32 }}>
                 {plan.features.slice(0, 4).map((feature, fIndex) => (
-                  <View key={fIndex} className="flex-row items-center gap-3">
-                    <CheckCircle2 size={16} className="color-primary opacity-60" />
-                    <Text className="flex-1 text-xs font-ubuntu-bold uppercase tracking-widest text-foreground/80 leading-5">
+                  <View key={fIndex} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <CheckCircle2 size={16} color="#f97316" style={{ opacity: 0.6 }} />
+                    <Text style={{ 
+                      flex: 1, 
+                      fontSize: 12, 
+                      fontFamily: 'Ubuntu-Bold', 
+                      textTransform: 'uppercase', 
+                      letterSpacing: 1.5,
+                      color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(15,23,42,0.8)',
+                      lineHeight: 20
+                    }}>
                       {feature}
                     </Text>
                   </View>
                 ))}
                 {plan.features.length > 4 && (
-                  <Text className="text-[10px] font-ubuntu-bold uppercase text-primary/60 ml-8 tracking-widest">
+                  <Text style={{ 
+                    fontSize: 10, 
+                    fontFamily: 'Ubuntu-Bold', 
+                    textTransform: 'uppercase',
+                    color: 'rgba(249,115,22,0.6)',
+                    marginLeft: 32,
+                    letterSpacing: 1.5
+                  }}>
                     + and more
                   </Text>
                 )}
@@ -223,23 +326,31 @@ export default function PremiumScreen() {
               <Pressable
                 onPress={() => !isCurrentPlan && handleUpgradeClick(plan)}
                 disabled={isCurrentPlan}
-                className={`py-4 rounded-2xl items-center justify-center ${
-                  isCurrentPlan
-                    ? 'bg-muted/50 border border-border border-solid'
+                style={{
+                  paddingVertical: 16,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: isCurrentPlan
+                    ? (isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.5)')
                     : plan.popular
-                    ? 'bg-primary'
-                    : 'bg-foreground'
-                }`}
+                    ? '#f97316'
+                    : (isDark ? '#ffffff' : '#0f172a'),
+                  borderWidth: isCurrentPlan ? 1 : 0,
+                  borderColor: isDark ? '#334155' : '#cbd5e1'
+                }}
               >
-                <Text
-                  className={`text-xs font-ubuntu-bold uppercase tracking-[0.2em] ${
-                    isCurrentPlan
-                      ? 'text-muted-foreground'
-                      : plan.popular
-                      ? 'text-primary-foreground'
-                      : 'text-background'
-                  }`}
-                >
+                <Text style={{
+                  fontSize: 12,
+                  fontFamily: 'Ubuntu-Bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: 2,
+                  color: isCurrentPlan
+                    ? (isDark ? '#64748b' : '#94a3b8')
+                    : plan.popular
+                    ? '#ffffff'
+                    : (isDark ? '#0f172a' : '#ffffff')
+                }}>
                   {isCurrentPlan ? 'Active Protocol' : plan.buttonText}
                 </Text>
               </Pressable>
@@ -249,36 +360,81 @@ export default function PremiumScreen() {
       </View>
 
       {/* Modern Comparison Table */}
-      <View className="mb-8">
-        <View className="items-center mb-10">
-          <Text className="text-2xl font-ubuntu-bold uppercase tracking-tighter text-foreground mb-1">
+      <View style={{ marginBottom: 32 }}>
+        <View style={{ alignItems: 'center', marginBottom: 40 }}>
+          <Text style={{ 
+            fontSize: 24, 
+            fontFamily: 'Ubuntu-Bold', 
+            textTransform: 'uppercase', 
+            letterSpacing: -0.5,
+            color: isDark ? '#ffffff' : '#0f172a',
+            marginBottom: 4
+          }}>
             Tier Comparison
           </Text>
-          <Text className="text-muted-foreground font-ubuntu-bold text-[10px] uppercase tracking-[0.3em]">
+          <Text style={{ 
+            color: isDark ? '#64748b' : '#94a3b8',
+            fontFamily: 'Ubuntu-Bold',
+            fontSize: 10,
+            textTransform: 'uppercase',
+            letterSpacing: 3
+          }}>
             Protocol Specifications
           </Text>
         </View>
 
-        <View className="flex-col pb-4">
+        <View style={{ paddingBottom: 16 }}>
           {/* Table Header */}
-          <View className="flex-row border-b border-[#64748b] pb-4 mb-4">
-            <View className="w-[34%] justify-center pr-1">
-              <Text className="text-[9px] font-ubuntu-bold uppercase tracking-widest text-muted-foreground">
+          <View style={{ 
+            flexDirection: 'row', 
+            borderBottomWidth: 1, 
+            borderBottomColor: isDark ? '#334155' : '#cbd5e1',
+            paddingBottom: 16, 
+            marginBottom: 16 
+          }}>
+            <View style={{ width: '34%', justifyContent: 'center', paddingRight: 4 }}>
+              <Text style={{ 
+                fontSize: 9, 
+                fontFamily: 'Ubuntu-Bold', 
+                textTransform: 'uppercase', 
+                letterSpacing: 1.5,
+                color: isDark ? '#64748b' : '#94a3b8'
+              }}>
                 Privileges
               </Text>
             </View>
-            <View className="w-[20%] items-center justify-center px-0.5">
-              <Text className="text-[9px] font-ubuntu-bold uppercase text-muted-foreground text-center">
+            <View style={{ width: '20%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 }}>
+              <Text style={{ 
+                fontSize: 9, 
+                fontFamily: 'Ubuntu-Bold', 
+                textTransform: 'uppercase',
+                color: isDark ? '#64748b' : '#94a3b8',
+                textAlign: 'center'
+              }}>
                 Free
               </Text>
             </View>
-            <View className="w-[23%] items-center justify-center px-0.5">
-              <Text className="text-[9px] font-ubuntu-bold uppercase tracking-wide text-primary text-center">
+            <View style={{ width: '23%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 }}>
+              <Text style={{ 
+                fontSize: 9, 
+                fontFamily: 'Ubuntu-Bold', 
+                textTransform: 'uppercase', 
+                letterSpacing: 0.5,
+                color: '#f97316',
+                textAlign: 'center'
+              }}>
                 Premium
               </Text>
             </View>
-            <View className="w-[23%] items-center justify-center px-0.5">
-              <Text className="text-[9px] font-ubuntu-bold uppercase tracking-wide text-muted-foreground text-center">
+            <View style={{ width: '23%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 }}>
+              <Text style={{ 
+                fontSize: 9, 
+                fontFamily: 'Ubuntu-Bold', 
+                textTransform: 'uppercase', 
+                letterSpacing: 0.5,
+                color: isDark ? '#64748b' : '#94a3b8',
+                textAlign: 'center'
+              }}>
                 Enterprise
               </Text>
             </View>
@@ -286,10 +442,17 @@ export default function PremiumScreen() {
 
           {/* Table Body */}
           {comparison.map((cat, cIdx) => (
-            <View key={cIdx} className="w-full">
+            <View key={cIdx} style={{ width: '100%' }}>
               {/* Category Header */}
-              <View className="py-6 justify-center items-center">
-                <Text className="text-[10px] font-ubuntu-bold uppercase tracking-[0.2em] text-[#3b82f6] text-center">
+              <View style={{ paddingVertical: 24, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ 
+                  fontSize: 10, 
+                  fontFamily: 'Ubuntu-Bold', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: 2,
+                  color: '#3b82f6',
+                  textAlign: 'center'
+                }}>
                   {cat.category}
                 </Text>
               </View>
@@ -297,19 +460,51 @@ export default function PremiumScreen() {
               {/* Features rows */}
               {cat.features.map((feat, fIdx) => {
                 return (
-                  <View key={fIdx} className="flex-row border-b border-[#64748b] py-4">
-                    <View className="w-[34%] justify-center pr-2">
-                      <Text className="text-[10px] font-ubuntu-bold uppercase text-foreground/80 leading-snug">
+                  <View key={fIdx} style={{ 
+                    flexDirection: 'row', 
+                    borderBottomWidth: 1, 
+                    borderBottomColor: isDark ? '#334155' : '#cbd5e1',
+                    paddingVertical: 16 
+                  }}>
+                    <View style={{ width: '34%', justifyContent: 'center', paddingRight: 8 }}>
+                      <Text style={{ 
+                        fontSize: 10, 
+                        fontFamily: 'Ubuntu-Bold', 
+                        textTransform: 'uppercase',
+                        color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(15,23,42,0.8)',
+                        lineHeight: 16
+                      }}>
                         {feat.name}
                       </Text>
                     </View>
-                    <View className="w-[20%] items-center justify-center border-l border-[#64748b]">
+                    <View style={{ 
+                      width: '20%', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      borderLeftWidth: 1, 
+                      borderLeftColor: isDark ? '#334155' : '#cbd5e1'
+                    }}>
                        <StatusIcon status={feat.free} />
                     </View>
-                    <View className="w-[23%] items-center justify-center border-x border-[#3b82f640] bg-[#3b82f60d]">
+                    <View style={{ 
+                      width: '23%', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      borderLeftWidth: 1,
+                      borderRightWidth: 1,
+                      borderLeftColor: 'rgba(59,130,246,0.25)',
+                      borderRightColor: 'rgba(59,130,246,0.25)',
+                      backgroundColor: 'rgba(59,130,246,0.05)'
+                    }}>
                       <StatusIcon status={feat.premium} />
                     </View>
-                    <View className="w-[23%] items-center justify-center border-r border-[#64748b]">
+                    <View style={{ 
+                      width: '23%', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      borderRightWidth: 1, 
+                      borderRightColor: isDark ? '#334155' : '#cbd5e1'
+                    }}>
                       <StatusIcon status={feat.enterprise} />
                     </View>
                   </View>

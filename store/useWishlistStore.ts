@@ -62,7 +62,7 @@ export const useWishlistStore = create<WishlistState>()(
             name: String(product.name || ""),
             price: Number(product.price) || 0,
             image: product.image || null,
-            category: String(product.category || "")
+            category: product.category !== undefined ? String(product.category) : ""
           };
           const exists = items.find((item) => item.id === safeProduct.id);
           set({ items: exists ? items.filter((item) => item.id !== safeProduct.id) : [...items, safeProduct] });
@@ -99,15 +99,18 @@ export const useWishlistStore = create<WishlistState>()(
     }),
     {
       name: "wishlist-storage",
-      version: 2, // Increment version to force reset
+      version: 2,
       storage: createJSONStorage(() => safeStorage),
       onRehydrateStorage: () => (state) => {
         try {
           if (state?.items && Array.isArray(state.items)) {
-            // Filter out any invalid items
-            state.items = state.items.filter((item: any) => 
-              item && typeof item === 'object' && item.id
-            );
+            // Filter out any invalid items and ensure category is defined
+            state.items = state.items
+              .filter((item: any) => item && typeof item === 'object' && item.id)
+              .map((item: any) => ({
+                ...item,
+                category: item.category !== undefined ? String(item.category) : ""
+              }));
           }
           state?.setHasHydrated(true);
         } catch (error) {
@@ -119,7 +122,16 @@ export const useWishlistStore = create<WishlistState>()(
         }
       },
       migrate: (persistedState: any, version: number) => {
-        // Force reset for version 2
+        // Validate and clean up items during migration
+        if (persistedState && persistedState.items && Array.isArray(persistedState.items)) {
+          persistedState.items = persistedState.items
+            .filter((item: any) => item && typeof item === 'object' && item.id)
+            .map((item: any) => ({
+              ...item,
+              category: item.category !== undefined ? String(item.category) : ""
+            }));
+          return { ...persistedState, _hasHydrated: false };
+        }
         return { items: [], _hasHydrated: false };
       },
     }

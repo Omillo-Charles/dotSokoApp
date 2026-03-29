@@ -61,7 +61,7 @@ export const useCartStore = create<CartState>()(
             price: Number(product.price) || 0,
             image: product.image || null,
             quantity: Number(product.quantity) || 1,
-            category: String(product.category || "")
+            category: product.category !== undefined ? String(product.category) : ""
           };
           const existing = items.find((item) => item.id === safeProduct.id);
           if (existing) {
@@ -119,11 +119,19 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "cart-storage",
-      version: 2, // Increment version to force reset
+      version: 2,
       storage: createJSONStorage(() => safeStorage),
       migrate: (persistedState: any, version: number) => {
-        // Force reset for version 2
-        return { items: [] };
+        // Validate and clean up items during migration
+        if (persistedState && persistedState.items && Array.isArray(persistedState.items)) {
+          persistedState.items = persistedState.items
+            .filter((item: any) => item && typeof item === 'object' && item.id)
+            .map((item: any) => ({
+              ...item,
+              category: item.category !== undefined ? String(item.category) : ""
+            }));
+        }
+        return persistedState || { items: [] };
       },
     }
   )
