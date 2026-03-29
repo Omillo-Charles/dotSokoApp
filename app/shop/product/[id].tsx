@@ -86,12 +86,31 @@ export default function ProductDetailScreen() {
     // Dynamically import stores after component mounts
     import("@/store/useCartStore").then(module => {
       setCartStore(module.useCartStore.getState());
+      
+      // Subscribe to cart changes
+      const unsubscribe = module.useCartStore.subscribe((state) => {
+        setCartStore(state);
+      });
+      
+      return () => unsubscribe();
     }).catch(err => console.error("Failed to load cart store:", err));
 
     import("@/store/useWishlistStore").then(module => {
       setWishlistStore(module.useWishlistStore.getState());
+      
+      // Subscribe to wishlist changes
+      const unsubscribe = module.useWishlistStore.subscribe((state) => {
+        setWishlistStore(state);
+        // Update wishlist status when store changes
+        if (product) {
+          const productId = product.id || product._id;
+          setIsInWishlist(state.items?.some((item: any) => item.id === productId) || false);
+        }
+      });
+      
+      return () => unsubscribe();
     }).catch(err => console.error("Failed to load wishlist store:", err));
-  }, []);
+  }, [product]);
 
   const { data: productsData, isLoading: isProductsLoading } = useProducts(
     product?.category ? { cat: product.category, limit: 13 } : { limit: 13 }
@@ -101,6 +120,16 @@ export default function ProductDetailScreen() {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [currentRating, setCurrentRating] = useState(0);
+  const [currentReviewsCount, setCurrentReviewsCount] = useState(0);
+
+  // Update rating when product loads
+  useEffect(() => {
+    if (product) {
+      setCurrentRating(product.rating || 0);
+      setCurrentReviewsCount(product.reviewsCount || 0);
+    }
+  }, [product]);
 
   const productImages = useMemo(() => {
     if (!product) return [];
@@ -320,7 +349,15 @@ export default function ProductDetailScreen() {
             <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white leading-tight mb-2">{product.name}</Text>
             <Text className="text-[13px] font-ubuntu-medium text-slate-500 dark:text-slate-400 mb-6">{product.description}</Text>
 
-            <ProductRating productId={product._id} initialRating={product.rating} initialReviewsCount={product.reviewsCount} />
+            <ProductRating 
+              productId={product._id || product.id} 
+              initialRating={currentRating} 
+              initialReviewsCount={currentReviewsCount}
+              onRatingUpdate={(newRating, newCount) => {
+                setCurrentRating(newRating);
+                setCurrentReviewsCount(newCount);
+              }}
+            />
 
             <View className="gap-y-6 mt-4">
               {product.sizes && product.sizes.length > 0 && (

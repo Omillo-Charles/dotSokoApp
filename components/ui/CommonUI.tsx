@@ -35,24 +35,39 @@ export const ProductRating = ({
       return;
     }
 
+    if (!productId) {
+      Alert.alert("Error", "Product ID is missing");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      console.log("Rating product:", productId, "with rating:", rating);
       const response = await api.post(`/products/${productId}/rate`, { rating });
       
+      console.log("Rating response:", response.data);
+      
       if (response.data.success) {
-        // Alert.alert("Success", "Thank you for your rating!");
         setSelectedRating(rating);
         
         queryClient.invalidateQueries({ queryKey: ['product', productId] });
         queryClient.invalidateQueries({ queryKey: ['products'] });
 
-        if (onRatingUpdate) {
-          onRatingUpdate(response.data.data.rating, response.data.data.reviewsCount);
+        if (onRatingUpdate && response.data.data) {
+          onRatingUpdate(response.data.data.rating || rating, response.data.data.reviewsCount || initialReviewsCount + 1);
         }
+        
+        Alert.alert("Success", "Thank you for your rating!");
       }
     } catch (error: any) {
       console.error("Error rating product:", error);
-      Alert.alert("Error", error.response?.data?.message || "Failed to submit rating.");
+      console.error("Error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      const errorMessage = error.response?.data?.message || error.message || "Failed to submit rating.";
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsSubmitting(false);
     }
