@@ -5,18 +5,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Heart, Share2, Plus, Minus, ShieldCheck, Truck, ShoppingCart, MessageSquare, Star } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useProduct, useProducts } from "@/hooks/useProducts";
-import { useCartStore } from "@/store/useCartStore";
-import { useWishlistStore } from "@/store/useWishlistStore";
 import { GoldCheck, ProductRating } from "@/components/ui/CommonUI";
 import { requireAuth } from "@/lib/authGuard";
 
 const screenWidth = Dimensions.get("window").width;
 const MAX_IMAGE_HEIGHT = 520;
 
-// Fetches natural image dimensions and returns a proportional display height
 function useImageHeight(uri: string | undefined) {
-  const containerWidth = screenWidth - 32; // px-4 on each side inside the card
-  const [height, setHeight] = useState(containerWidth); // square fallback
+  const containerWidth = screenWidth - 32;
+  const [height, setHeight] = useState(containerWidth);
 
   useEffect(() => {
     if (!uri) return;
@@ -33,7 +30,6 @@ function useImageHeight(uri: string | undefined) {
   return height;
 }
 
-// Isolated image component so the hook is always called unconditionally
 function ProductMainImage({ uri, height, price, formatPrice, isDark }: {
   uri: string;
   height: number;
@@ -46,7 +42,6 @@ function ProductMainImage({ uri, height, price, formatPrice, isDark }: {
   const priceText = isDark ? '#ffffff' : '#0f172a';
 
   return (
-    // Container carries the border, radius, and overflow:hidden — clips image to rounded shape
     <View style={{
       borderRadius: 20,
       borderWidth: 1,
@@ -59,7 +54,6 @@ function ProductMainImage({ uri, height, price, formatPrice, isDark }: {
         style={{ width: '100%', height }}
         resizeMode="cover"
       />
-      {/* Price badge — absolute over the image */}
       <View style={{
         position: 'absolute', bottom: 12, right: 12,
         backgroundColor: priceBg,
@@ -83,18 +77,30 @@ export default function ProductDetailScreen() {
   const { isDark } = useColorScheme();
 
   const { data: product, isLoading, error } = useProduct(id as string);
-  const { addItem } = useCartStore();
-  const { toggleWishlist, items: wishlistItems, _hasHydrated } = useWishlistStore();
+  
+  // Safe store access with lazy loading
+  const [cartStore, setCartStore] = useState<any>(null);
+  const [wishlistStore, setWishlistStore] = useState<any>(null);
+
+  useEffect(() => {
+    // Dynamically import stores after component mounts
+    import("@/store/useCartStore").then(module => {
+      setCartStore(module.useCartStore.getState());
+    }).catch(err => console.error("Failed to load cart store:", err));
+
+    import("@/store/useWishlistStore").then(module => {
+      setWishlistStore(module.useWishlistStore.getState());
+    }).catch(err => console.error("Failed to load wishlist store:", err));
+  }, []);
 
   const { data: productsData, isLoading: isProductsLoading } = useProducts(
-    product?.category
-      ? { cat: product.category, limit: 13 }
-      : { limit: 13 },
+    product?.category ? { cat: product.category, limit: 13 } : { limit: 13 }
   );
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
   const productImages = useMemo(() => {
     if (!product) return [];
@@ -119,6 +125,14 @@ export default function ProductDetailScreen() {
       .slice(0, 12);
   }, [productsData, product]);
 
+  // Check wishlist status
+  useEffect(() => {
+    if (wishlistStore && product) {
+      const productId = product.id || product._id;
+      setIsInWishlist(wishlistStore.items?.some((item: any) => item.id === productId) || false);
+    }
+  }, [wishlistStore, product]);
+
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(price);
 
@@ -129,12 +143,59 @@ export default function ProductDetailScreen() {
       Alert.alert("Notice", "Please select a size");
       return;
     }
-    const currentImage = productImages[activeImageIndex] || product.image;
-    addItem({ id: product.id || product._id, name: product.name, price: product.price, image: currentImage, quantity, category: product.category });
-    Alert.alert("Success", "Added to Cart!");
+    
+    if (!cartStore) {
+      Alert.alert("Error", "Cart not available");
+      return;
+    }
+
+    try {
+      const currentImage = productImages[activeImageIndex] || product.image;
+      const productData = {
+        id: String(product.id || product._id),
+        name: String(product.name || ""),
+        price: Number(product.price) || 0,
+        image: currentImage || null,
+        quantity: Number(quantity) || 1,
+        category: String(product.category || "")
+      };
+      
+      cartStore.addItem(productData);
+      Alert.alert("Success", "Added to Cart!");
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      Alert.alert("Error", "Failed to add to cart");
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+    if (!(await requireAuth("save items to wishlist"))) return;
+    
+    if (!wishlistStore) {
+      Alert.alert("Error", "Wishlist not available");
+      return;
+    }
+
+    try {
+      const productData = {
+        id: String(product.id || product._id),
+        name: String(product.name || ""),
+        price: Number(product.price) || 0,
+        image: product.image || null,
+        category: String(product.category || "")
+      };
+      
+      wishlistStore.toggleWishlist(productData);
+      setIsInWishlist(!isInWishlist);
+    } catch (err) {
+      console.error("Error toggling wishlist:", err);
+      Alert.alert("Error", "Failed to update wishlist");
+    }
   };
 
   const handleShare = async () => {
+    if (!product) return;
     const productId = product.id || product._id;
     try {
       await Share.share({
@@ -143,14 +204,14 @@ export default function ProductDetailScreen() {
         url: `https://dotsoko.com/shop/product/${productId}`,
       });
     } catch (err) {
-      // user cancelled — no action needed
+      // user cancelled
     }
   };
 
   if (isLoading) {
     return (
       <View className="flex-1 bg-slate-50 dark:bg-slate-950 items-center justify-center">
-        <ActivityIndicator size="large" color="#0f172a" />
+        <ActivityIndicator size="large" color="#f97316" />
       </View>
     );
   }
@@ -167,7 +228,6 @@ export default function ProductDetailScreen() {
     );
   }
 
-  const inWishlist = _hasHydrated && wishlistItems.some((item) => item.id === (product.id || product._id));
   const iconColor = isDark ? "#ffffff" : "#0f172a";
   const iconMuted = isDark ? "#94a3b8" : "#64748b";
 
@@ -181,12 +241,17 @@ export default function ProductDetailScreen() {
       </View>
 
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
-        {/* Main Product Info Card */}
         <View className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm mb-12">
 
           {/* Shop Header */}
           <View className="p-5 flex-row items-center justify-between">
-            <TouchableOpacity className="flex-row items-center gap-3" onPress={() => {}}>
+            <TouchableOpacity 
+              className="flex-row items-center gap-3" 
+              onPress={() => {
+                const shopId = product.shop?.id || product.shop?._id;
+                if (shopId) router.push(`/shop/${shopId}` as any);
+              }}
+            >
               <View className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
                 <Image source={{ uri: product.shop?.avatar || 'https://via.placeholder.com/150' }} className="w-full h-full" />
               </View>
@@ -200,14 +265,11 @@ export default function ProductDetailScreen() {
             </TouchableOpacity>
             <View className="flex-row items-center gap-2">
               <TouchableOpacity
-                onPress={async () => {
-                  if (!(await requireAuth("save items to wishlist"))) return;
-                  toggleWishlist({ id: product.id || product._id, name: product.name, price: product.price, image: product.image });
-                }}
+                onPress={handleToggleWishlist}
                 className="p-1.5 rounded-full"
-                style={{ backgroundColor: inWishlist ? 'rgba(236, 72, 153, 0.1)' : 'transparent' }}
+                style={{ backgroundColor: isInWishlist ? 'rgba(236, 72, 153, 0.1)' : 'transparent' }}
               >
-                <Heart size={16} color={inWishlist ? "#ec4899" : iconMuted} fill={inWishlist ? "#ec4899" : "transparent"} />
+                <Heart size={16} color={isInWishlist ? "#ec4899" : iconMuted} fill={isInWishlist ? "#ec4899" : "transparent"} />
               </TouchableOpacity>
               <TouchableOpacity onPress={handleShare} className="p-1.5 rounded-full">
                 <Share2 size={16} color={iconMuted} />
@@ -215,7 +277,7 @@ export default function ProductDetailScreen() {
             </View>
           </View>
 
-          {/* Photo Section — container has border+radius+overflow:hidden, image is plain (mirrors web) */}
+          {/* Photo Section */}
           <View style={{ paddingHorizontal: 16, paddingVertical: 8, gap: 12 }}>
             <ProductMainImage
               uri={activeImageUri}
@@ -326,7 +388,7 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
-        {/* Recommended for You */}
+        {/* Recommended Products */}
         <View>
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-lg font-ubuntu-bold text-slate-900 dark:text-white">Recommended for You</Text>
@@ -359,7 +421,6 @@ export default function ProductDetailScreen() {
                       borderBottomColor: isDark ? '#1e293b' : '#f1f5f9',
                     }}
                   >
-                    {/* Image container — rounded + overflow:hidden clips image, matches web's rounded-2xl overflow-hidden border */}
                     <View style={{
                       width: 96,
                       borderRadius: 16,
@@ -376,7 +437,6 @@ export default function ProductDetailScreen() {
                       />
                     </View>
 
-                    {/* Content */}
                     <View style={{ flex: 1, minWidth: 0, paddingVertical: 2 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
                         <Text

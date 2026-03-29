@@ -51,22 +51,76 @@ export const useWishlistStore = create<WishlistState>()(
       setHasHydrated: (v) => set({ _hasHydrated: v }),
 
       toggleWishlist: (product) => {
-        const { items } = get();
-        const exists = items.find((item) => item.id === product.id);
-        set({ items: exists ? items.filter((item) => item.id !== product.id) : [...items, product] });
+        try {
+          if (!product || !product.id) {
+            console.error("Invalid product for wishlist");
+            return;
+          }
+          const { items } = get();
+          const safeProduct: WishlistItem = { 
+            id: String(product.id),
+            name: String(product.name || ""),
+            price: Number(product.price) || 0,
+            image: product.image || null,
+            category: String(product.category || "")
+          };
+          const exists = items.find((item) => item.id === safeProduct.id);
+          set({ items: exists ? items.filter((item) => item.id !== safeProduct.id) : [...items, safeProduct] });
+        } catch (error) {
+          console.error("Error toggling wishlist:", error);
+        }
       },
 
-      removeItem: (id) => set({ items: get().items.filter((item) => item.id !== id) }),
+      removeItem: (id) => {
+        try {
+          set({ items: get().items.filter((item) => item.id !== id) });
+        } catch (error) {
+          console.error("Error removing item:", error);
+        }
+      },
 
-      isInWishlist: (id) => get().items.some((item) => item.id === id),
+      isInWishlist: (id) => {
+        try {
+          return get().items.some((item) => item.id === id);
+        } catch (error) {
+          console.error("Error checking wishlist:", error);
+          return false;
+        }
+      },
 
-      getTotalItems: () => get().items.length,
+      getTotalItems: () => {
+        try {
+          return get().items.length;
+        } catch (error) {
+          console.error("Error getting total items:", error);
+          return 0;
+        }
+      },
     }),
     {
       name: "wishlist-storage",
+      version: 2, // Increment version to force reset
       storage: createJSONStorage(() => safeStorage),
       onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+        try {
+          if (state?.items && Array.isArray(state.items)) {
+            // Filter out any invalid items
+            state.items = state.items.filter((item: any) => 
+              item && typeof item === 'object' && item.id
+            );
+          }
+          state?.setHasHydrated(true);
+        } catch (error) {
+          console.error("Error rehydrating wishlist:", error);
+          if (state) {
+            state.items = [];
+            state.setHasHydrated(true);
+          }
+        }
+      },
+      migrate: (persistedState: any, version: number) => {
+        // Force reset for version 2
+        return { items: [], _hasHydrated: false };
       },
     }
   )
@@ -76,9 +130,23 @@ export const useWishlistStore = create<WishlistState>()(
  * Call on sign-out: wipes in-memory state and removes the persisted key.
  */
 export const clearWishlistStore = async () => {
-  useWishlistStore.setState({ items: [], _hasHydrated: true });
   try {
+    useWishlistStore.setState({ items: [], _hasHydrated: true });
     if (Platform.OS === 'web') localStorage.removeItem("wishlist-storage");
     else await AsyncStorage.removeItem("wishlist-storage");
-  } catch {}
+  } catch (error) {
+    console.error("Error clearing wishlist store:", error);
+  }
+};
+
+/**
+ * Force reset wishlist storage if corrupted
+ */
+export const resetWishlistStorage = async () => {
+  try {
+    await clearWishlistStore();
+    useWishlistStore.setState({ items: [], _hasHydrated: false });
+  } catch (error) {
+    console.error("Error resetting wishlist storage:", error);
+  }
 };

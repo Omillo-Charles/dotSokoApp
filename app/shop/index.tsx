@@ -1,5 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, Platform, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import {
+  View, Text, Pressable, Platform, ScrollView, TouchableOpacity,
+  ActivityIndicator, RefreshControl, Modal, TextInput, FlatList, Image,
+} from 'react-native';
 import { Search, ShoppingBag, AlertCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -8,6 +11,166 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { CATEGORIES } from "@/constants/categories";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+
+// ── Shop search modal ──────────────────────────────────────────────────────────
+function ShopSearchModal({ visible, onClose, isDark }: { visible: boolean; onClose: () => void; isDark: boolean }) {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<TextInput>(null);
+
+  const border = isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9";
+  const muted = isDark ? "#64748b" : "#94a3b8";
+  const text = isDark ? "#ffffff" : "#0f172a";
+  const inputBg = isDark ? "#1e293b" : "#f8fafc";
+
+  const { data: allShops = [], isLoading } = useQuery({
+    queryKey: ["shops-all"],
+    queryFn: async () => {
+      const res = await api.get("/shops", { params: { limit: 100 } });
+      return res.data.data || res.data || [];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const filtered = query.trim().length < 1
+    ? allShops
+    : allShops.filter((s: any) => {
+        const q = query.toLowerCase();
+        return (
+          s.name?.toLowerCase().includes(q) ||
+          s.username?.toLowerCase().includes(q) ||
+          s.category?.toLowerCase().includes(q)
+        );
+      });
+
+  const handleSelect = (shop: any) => {
+    onClose();
+    setQuery("");
+    const id = shop.id || shop._id;
+    router.push(`/shop/${id}` as any);
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <View style={{ flex: 1, backgroundColor: isDark ? "#020617" : "#ffffff", paddingTop: insets.top }}>
+        {/* Header */}
+        <View style={{
+          flexDirection: "row", alignItems: "center", gap: 12,
+          paddingHorizontal: 16, paddingVertical: 14,
+          borderBottomWidth: 1, borderBottomColor: border,
+        }}>
+          {/* Search input */}
+          <View style={{
+            flex: 1, flexDirection: "row", alignItems: "center", gap: 10,
+            backgroundColor: inputBg, borderRadius: 14,
+            borderWidth: 1, borderColor: border,
+            paddingHorizontal: 14, paddingVertical: 11,
+          }}>
+            <Ionicons name="search-outline" size={18} color={muted} />
+            <TextInput
+              ref={inputRef}
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search shops by name or category..."
+              placeholderTextColor={muted}
+              autoFocus
+              style={{ flex: 1, fontFamily: "Ubuntu-Regular", fontSize: 14, color: text, padding: 0 }}
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close-circle" size={17} color={muted} />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity onPress={onClose} style={{ paddingLeft: 4 }}>
+            <Text style={{ fontFamily: "Ubuntu-Bold", fontSize: 14, color: "#f97316" }}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Results */}
+        {isLoading ? (
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+            <ActivityIndicator size="large" color="#f97316" />
+          </View>
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item: any) => item.id || item._id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 40 }}
+            ListEmptyComponent={
+              <View style={{ alignItems: "center", paddingTop: 60 }}>
+                <Ionicons name="storefront-outline" size={48} color={muted} />
+                <Text style={{ fontFamily: "Ubuntu-Bold", fontSize: 15, color: text, marginTop: 14 }}>No shops found</Text>
+                <Text style={{ fontFamily: "Ubuntu-Regular", fontSize: 13, color: muted, marginTop: 4 }}>
+                  Try a different name or category
+                </Text>
+              </View>
+            }
+            renderItem={({ item: shop }: { item: any }) => (
+              <TouchableOpacity
+                onPress={() => handleSelect(shop)}
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: "row", alignItems: "center", gap: 14,
+                  paddingVertical: 12,
+                  borderBottomWidth: 1, borderBottomColor: border,
+                }}
+              >
+                {/* Avatar */}
+                <View style={{
+                  width: 48, height: 48, borderRadius: 24, overflow: "hidden",
+                  backgroundColor: isDark ? "#1e293b" : "#f1f5f9",
+                  borderWidth: 1, borderColor: border, flexShrink: 0,
+                }}>
+                  {shop.avatar
+                    ? <Image source={{ uri: shop.avatar }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                    : <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                        <Ionicons name="storefront-outline" size={22} color={muted} />
+                      </View>
+                  }
+                </View>
+
+                {/* Info */}
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                    <Text numberOfLines={1} style={{ fontFamily: "Ubuntu-Bold", fontSize: 14, color: text }}>
+                      {shop.name}
+                    </Text>
+                    {shop.isVerified && (
+                      <Ionicons name="checkmark-circle" size={14} color="#f97316" />
+                    )}
+                  </View>
+                  <Text numberOfLines={1} style={{ fontFamily: "Ubuntu-Regular", fontSize: 12, color: muted, marginTop: 1 }}>
+                    {shop.username ? `@${shop.username}` : ""}{shop.username && shop.category ? " · " : ""}{shop.category?.replace(/-/g, " ")}
+                  </Text>
+                </View>
+
+                {/* Followers */}
+                <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
+                  <Text style={{ fontFamily: "Ubuntu-Bold", fontSize: 12, color: text }}>
+                    {(shop.followersCount || 0).toLocaleString()}
+                  </Text>
+                  <Text style={{ fontFamily: "Ubuntu-Regular", fontSize: 10, color: muted }}>followers</Text>
+                </View>
+
+                <Ionicons name="chevron-forward" size={16} color={isDark ? "#334155" : "#cbd5e1"} />
+              </TouchableOpacity>
+            )}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+}
 
 export default function ShopScreen() {
   const insets = useSafeAreaInsets();
@@ -16,6 +179,7 @@ export default function ShopScreen() {
   const { cat } = useLocalSearchParams<{ cat?: string }>();
 
   const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
+  const [shopSearchOpen, setShopSearchOpen] = useState(false);
 
   // When a category is active, ignore the tab filter and just filter by category
   const queryParams = cat
@@ -77,7 +241,10 @@ export default function ShopScreen() {
             <Text className="text-2xl font-ubuntu-bold text-slate-900 dark:text-white tracking-tight">
               {activeCategoryName ? activeCategoryName : "Explore"}
             </Text>
-            <Pressable className="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-full items-center justify-center">
+            <Pressable
+              onPress={() => setShopSearchOpen(true)}
+              className="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded-full items-center justify-center"
+            >
               <Search size={18} color="#64748b" />
             </Pressable>
           </View>
@@ -157,6 +324,12 @@ export default function ShopScreen() {
       >
         <Ionicons name="add" size={24} color="#ffffff" />
       </Pressable>
+
+      <ShopSearchModal
+        visible={shopSearchOpen}
+        onClose={() => setShopSearchOpen(false)}
+        isDark={isDark}
+      />
     </View>
   );
 }

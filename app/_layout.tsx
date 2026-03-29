@@ -8,6 +8,7 @@ import { useColorScheme as useDeviceColorScheme } from "react-native";
 import { useColorScheme } from "nativewind";
 import { useThemeStore } from "../store/useThemeStore";
 import SplashScreen from "@components/ui/SplashScreen"; // <- our custom splash
+import { cleanupStorage } from "../lib/storageCleanup";
 import "../globals.css";
 
 // Prevent native splash from auto-hiding
@@ -69,11 +70,14 @@ export default function RootLayout() {
 
   const [appReady, setAppReady] = useState(false);
 
-  // Hide native splash only after React splash renders
+  // Clean up storage and hide native splash only after React splash renders
   useEffect(() => {
     if (loaded) {
-      setAppReady(true); // show custom splash
-      SplashScreenNative.hideAsync();
+      // Clean up any corrupted storage data
+      cleanupStorage().finally(() => {
+        setAppReady(true); // show custom splash
+        SplashScreenNative.hideAsync();
+      });
     }
   }, [loaded]);
 

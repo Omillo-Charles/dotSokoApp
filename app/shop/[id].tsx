@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Image,
-  ActivityIndicator, Dimensions, Alert
+  ActivityIndicator, Dimensions, Alert, Share
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -62,6 +62,23 @@ export default function ShopDetailScreen() {
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(price);
 
+  const handleShareShop = async () => {
+    if (!shop) return;
+    const shopId = shop._id || shop.id;
+    const shopHandle = shop.username ? `@${shop.username}` : shop.name;
+    const shopUrl = `https://dotsoko.com/shop/${shopId}`;
+    
+    try {
+      await Share.share({
+        title: `${shop.name} on .Soko`,
+        message: `Check out ${shop.name} on .Soko!\n\n${shop.description || 'Quality products and great service'}\n\n${shopHandle}\n${products.length} products available\n\n${shopUrl}`,
+        url: shopUrl,
+      });
+    } catch (err) {
+      // User cancelled share
+    }
+  };
+
   const iconColor = isDark ? "#ffffff" : "#0f172a";
   const iconMuted = isDark ? "#94a3b8" : "#64748b";
 
@@ -88,9 +105,9 @@ export default function ShopDetailScreen() {
   const tabs: SectionType[] = ['Products', 'Reviews', 'About', 'Followers', 'Following'];
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
       {/* Header */}
-      <View style={{ paddingTop: insets.top }} className="px-4 py-4 flex-row items-center bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5 z-30">
+      <View className="px-4 py-4 flex-row items-center bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-white/5 z-30">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2 mr-2">
           <ChevronLeft size={24} color={iconColor} />
         </TouchableOpacity>
@@ -98,7 +115,7 @@ export default function ShopDetailScreen() {
           <Text className="text-xl font-ubuntu-bold text-slate-900 dark:text-white" numberOfLines={1}>{shop.name}</Text>
           <Text className="text-xs font-ubuntu text-slate-500">{products.length} products</Text>
         </View>
-        <TouchableOpacity className="p-2" onPress={() => {}}>
+        <TouchableOpacity className="p-2 -mr-2" onPress={handleShareShop}>
           <Share2 size={20} color={iconMuted} />
         </TouchableOpacity>
       </View>
@@ -257,7 +274,7 @@ export default function ShopDetailScreen() {
                         )}
                         <TouchableOpacity
                           onPress={() => {
-                            addItem({ id: p._id, name: p.name, price: p.price, image: p.image || p.images?.[0], quantity: 1, category: p.category });
+                            addItem({ id: p._id, name: p.name, price: p.price, image: p.image || p.images?.[0], quantity: 1, category: p.category || "" });
                             Alert.alert("Added", `${p.name} added to cart`);
                           }}
                           className="ml-auto p-1"

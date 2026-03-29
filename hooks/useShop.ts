@@ -113,3 +113,16 @@ export const useFollowShop = () => {
     },
   });
 };
+
+export const useRateShop = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ shopId, rating }: { shopId: string; rating: number }) => {
+      const response = await api.post(`/shops/${shopId}/rate`, { rating });
+      return response.data;
+    },
+    onSettled: (_data, _error, { shopId }) => {
+      queryClient.invalidateQueries({ queryKey: ['shop', shopId] });
+    },
+  });
+};

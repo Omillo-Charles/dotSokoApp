@@ -10,14 +10,16 @@ export const useComments = (productId?: string) => {
     queryFn: async () => {
       const response = await api.get(`/comments/product/${productId}`);
       const data = response.data.data || [];
-      return data.map((c: any) => ({
-        ...c,
-        _id: c.id || c._id || `comment-${Math.random()}`,
-        user: c.user ? {
-          ...c.user,
-          _id: c.user.id || c.user._id
-        } : null
-      }));
+      return data
+        .filter((c: any) => !!c)
+        .map((c: any) => ({
+          ...c,
+          _id: c.id || c._id || `comment-${Math.random()}`,
+          user: c.user ? {
+            ...c.user,
+            _id: c.user.id || c.user._id
+          } : null
+        }));
     },
     enabled: !!productId,
   });

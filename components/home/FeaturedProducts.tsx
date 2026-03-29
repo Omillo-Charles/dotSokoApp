@@ -34,7 +34,7 @@ function ProductCard({ p, isDark }: { p: any; isDark: boolean }) {
       name: p.name,
       price,
       image: imageSrc,
-      category: p.category,
+      category: p.category || "",
       quantity: 1,
     });
     setJustAdded(true);
@@ -57,7 +57,7 @@ function ProductCard({ p, isDark }: { p: any; isDark: boolean }) {
       name: p.name,
       price,
       image: imageSrc,
-      category: p.category,
+      category: p.category || "",
     });
   };
 

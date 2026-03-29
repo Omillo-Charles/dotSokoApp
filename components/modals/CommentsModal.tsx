@@ -22,7 +22,9 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
   const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
   const { user } = useUser();
-  const { comments, isLoading, isPosting, createComment, deleteComment } = useComments(productId);
+  const { comments, isLoading, isPosting, createComment, deleteComment } = useComments(
+    visible && productId ? productId : undefined
+  );
   const [text, setText] = useState("");
   const inputRef = useRef<TextInput>(null);
 
@@ -52,47 +54,55 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
   };
 
   const renderComment = ({ item: comment, index }: { item: any; index: number }) => {
-    const isOwn = user && (user._id === comment.user?._id || user.id === comment.user?._id);
-    const avatar = comment.user?.avatar;
-    const name = comment.user?.name || "User";
-    const date = new Date(comment.createdAt).toLocaleDateString("en-KE", { day: "numeric", month: "short" });
+    if (!comment || !comment._id) return null;
 
-    return (
-      <View style={{
-        flexDirection: "row", alignItems: "flex-start", gap: 10,
-        paddingVertical: 12,
-        borderBottomWidth: index < comments.length - 1 ? 1 : 0,
-        borderBottomColor: borderColor,
-      }}>
-        {/* Avatar */}
-        <View style={{ width: 34, height: 34, borderRadius: 17, overflow: "hidden", backgroundColor: isDark ? "#1e293b" : "#f1f5f9", borderWidth: 1, borderColor }}>
-          {avatar
-            ? <Image source={{ uri: avatar }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-            : <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-                <Ionicons name="person" size={16} color={mutedColor} />
-              </View>
-          }
-        </View>
+    try {
+      const isOwn = user && (user._id === comment.user?._id || user.id === comment.user?._id);
+      const avatar = comment.user?.avatar;
+      const name = comment.user?.name || "User";
+      const date = comment.createdAt
+        ? new Date(comment.createdAt).toLocaleDateString("en-KE", { day: "numeric", month: "short" })
+        : "";
 
-        {/* Body */}
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Text style={{ fontFamily: "Ubuntu-Bold", fontSize: 13, color: textColor }}>{name}</Text>
-              <Text style={{ fontFamily: "Ubuntu-Regular", fontSize: 11, color: mutedColor }}>{date}</Text>
-            </View>
-            {isOwn && (
-              <TouchableOpacity onPress={() => handleDelete(comment._id, comment.user?._id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Ionicons name="trash-outline" size={14} color="#ef4444" />
-              </TouchableOpacity>
-            )}
+      return (
+        <View style={{
+          flexDirection: "row", alignItems: "flex-start", gap: 10,
+          paddingVertical: 12,
+          borderBottomWidth: index < comments.length - 1 ? 1 : 0,
+          borderBottomColor: borderColor,
+        }}>
+          {/* Avatar */}
+          <View style={{ width: 34, height: 34, borderRadius: 17, overflow: "hidden", backgroundColor: isDark ? "#1e293b" : "#f1f5f9", borderWidth: 1, borderColor }}>
+            {avatar
+              ? <Image source={{ uri: avatar }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+              : <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="person" size={16} color={mutedColor} />
+                </View>
+            }
           </View>
-          <Text style={{ fontFamily: "Ubuntu-Regular", fontSize: 13, color: isDark ? "#cbd5e1" : "#334155", lineHeight: 19 }}>
-            {comment.content}
-          </Text>
+
+          {/* Body */}
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={{ fontFamily: "Ubuntu-Bold", fontSize: 13, color: textColor }}>{name}</Text>
+                <Text style={{ fontFamily: "Ubuntu-Regular", fontSize: 11, color: mutedColor }}>{date}</Text>
+              </View>
+              {isOwn && (
+                <TouchableOpacity onPress={() => handleDelete(comment._id, comment.user?._id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                </TouchableOpacity>
+              )}
+            </View>
+            <Text style={{ fontFamily: "Ubuntu-Regular", fontSize: 13, color: isDark ? "#cbd5e1" : "#334155", lineHeight: 19 }}>
+              {comment.content ?? ""}
+            </Text>
+          </View>
         </View>
-      </View>
-    );
+      );
+    } catch {
+      return null;
+    }
   };
 
   return (
@@ -140,7 +150,7 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
           </View>
         ) : (
           <FlatList
-            data={comments}
+            data={comments.filter(Boolean)}
             keyExtractor={(item) => item._id}
             renderItem={renderComment}
             contentContainerStyle={{
