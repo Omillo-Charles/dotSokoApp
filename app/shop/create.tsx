@@ -6,7 +6,6 @@ import {
   TextInput, 
   TouchableOpacity, 
   ActivityIndicator, 
-  Alert, 
   KeyboardAvoidingView, 
   Platform,
   Image,
@@ -42,6 +41,7 @@ import {
   ChevronLeft
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppModal } from '@/components/modals/AppModal';
 
 const { width } = Dimensions.get('window');
 
@@ -79,6 +79,7 @@ export default function CreateShopScreen() {
   const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
   const queryClient = useQueryClient();
+  const modal = useAppModal();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -182,21 +183,23 @@ export default function CreateShopScreen() {
       });
 
       if (response.data.success) {
-        // Update local storage user account type
         const userData = await AsyncStorage.getItem('user');
         if (userData) {
           const user = JSON.parse(userData);
           user.accountType = 'seller';
           await AsyncStorage.setItem('user', JSON.stringify(user));
         }
-
-        Alert.alert("Success", "Welcome to the dotSoko sellers community!");
+        modal.show({
+          title: "Shop Launched!",
+          message: "Welcome to the dotSoko sellers community!",
+          variant: "success",
+          actions: [{ label: "Go to Dashboard", style: "primary", onPress: () => router.replace("/seller/" as any) }],
+        });
         queryClient.invalidateQueries({ queryKey: ['my-shop'] });
-        router.replace("/seller/" as any);
       }
     } catch (error: any) {
       console.error("Shop Creation Error:", error);
-      Alert.alert("Error", error.response?.data?.message || "Failed to launch shop");
+      modal.show({ title: "Error", message: error.response?.data?.message || "Failed to launch shop", variant: "error" });
     } finally {
       setLoading(false);
     }

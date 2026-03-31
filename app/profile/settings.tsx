@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, Switch,
-  Alert, ActivityIndicator, Modal, TextInput,
+  ActivityIndicator, Modal, TextInput,
   KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -13,6 +13,7 @@ import { useThemeStore } from "@/store/useThemeStore";
 import { useSignOut } from "@/hooks/useAuth";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { useAppModal } from "@/components/modals/AppModal";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type ThemeOption = "light" | "dark" | "system";
@@ -93,25 +94,35 @@ function ChangePasswordModal({ visible, onClose, isDark }: { visible: boolean; o
   const [confirm, setConfirm] = useState("");
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNext, setShowNext] = useState(false);
+  const modal = useAppModal();
 
   const mutation = useMutation({
     mutationFn: async () => {
       await api.post("/auth/change-password", { currentPassword: current, newPassword: next });
     },
     onSuccess: () => {
-      Alert.alert("Success", "Password changed successfully.");
+      modal.show({ title: "Password Changed", message: "Your password has been updated successfully.", variant: "success", autoDismiss: 2500 });
       setCurrent(""); setNext(""); setConfirm("");
       onClose();
     },
     onError: (err: any) => {
-      Alert.alert("Error", err?.response?.data?.message || "Failed to change password.");
+      modal.show({ title: "Error", message: err?.response?.data?.message || "Failed to change password.", variant: "error" });
     },
   });
 
   const handleSubmit = () => {
-    if (!current || !next || !confirm) return Alert.alert("Missing fields", "Please fill in all fields.");
-    if (next.length < 6) return Alert.alert("Too short", "New password must be at least 6 characters.");
-    if (next !== confirm) return Alert.alert("Mismatch", "New passwords do not match.");
+    if (!current || !next || !confirm) {
+      modal.show({ title: "Missing Fields", message: "Please fill in all fields.", variant: "warning" });
+      return;
+    }
+    if (next.length < 6) {
+      modal.show({ title: "Too Short", message: "New password must be at least 6 characters.", variant: "warning" });
+      return;
+    }
+    if (next !== confirm) {
+      modal.show({ title: "Mismatch", message: "New passwords do not match.", variant: "warning" });
+      return;
+    }
     mutation.mutate();
   };
 
@@ -228,6 +239,7 @@ export default function SettingsScreen() {
   const { theme, setTheme } = useThemeStore();
   const signOutMutation = useSignOut();
   const queryClient = useQueryClient();
+  const modal = useAppModal();
 
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -256,13 +268,14 @@ export default function SettingsScreen() {
   const themeLabel: Record<ThemeOption, string> = { light: "Light", dark: "Dark", system: "System" };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "This will permanently delete your account, shop, products, and all data. This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
+    modal.show({
+      title: "Delete Account",
+      message: "This will permanently delete your account, shop, products, and all data. This cannot be undone.",
+      variant: "destructive",
+      actions: [
+        { label: "Cancel", style: "secondary" },
         {
-          text: "Delete", style: "destructive",
+          label: "Delete Forever", style: "destructive",
           onPress: async () => {
             try {
               await api.delete("/users/me");
@@ -270,12 +283,12 @@ export default function SettingsScreen() {
               queryClient.clear();
               router.replace("/(auth)/login" as any);
             } catch (err: any) {
-              Alert.alert("Error", err?.response?.data?.message || "Failed to delete account.");
+              modal.show({ title: "Error", message: err?.response?.data?.message || "Failed to delete account.", variant: "error" });
             }
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   const switchColor = isDark ? "#f97316" : "#f97316";
@@ -369,7 +382,7 @@ export default function SettingsScreen() {
             icon="card-outline" iconColor="#10b981" iconBg="rgba(16,185,129,0.12)"
             title="Payment Methods"
             subtitle="M-Pesa, cards, and more"
-            onPress={() => Alert.alert("Coming Soon", "Payment methods management is coming soon.")}
+            onPress={() => modal.show({ title: "Coming Soon", message: "Payment methods management is coming soon.", variant: "info", autoDismiss: 2500 })}
             isDark={isDark}
           />
           <Row

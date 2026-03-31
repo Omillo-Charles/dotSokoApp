@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, Dimensions, Animated, Modal, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, Dimensions, Animated, Modal, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -10,6 +10,7 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { CommentsModal } from "@/components/modals/CommentsModal";
 import { requireAuth } from "@/lib/authGuard";
 import { useFollowShop, useRateShop } from "@/hooks/useShop";
+import { useAppModal } from "@/components/modals/AppModal";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTENT_WIDTH = SCREEN_WIDTH - 92;
@@ -23,6 +24,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { isDark } = useColorScheme();
   const { addItem, items: cartItems } = useCartStore();
   const { toggleWishlist, items: wishlistItems, _hasHydrated } = useWishlistStore();
+  const modal = useAppModal();
 
   const productId = product._id || product.id;
   const shopId = product.shop?.id || product.shop?._id;
@@ -30,7 +32,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   // ── Comments modal ──────────────────────────────────────────────────────────
   const [commentsOpen, setCommentsOpen] = useState(false);
 
-  // Close modals on unmount to prevent stale state crashes during navigation
   useEffect(() => {
     return () => {
       setCommentsOpen(false);
@@ -50,8 +51,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     if (!(await requireAuth("follow shops"))) return;
     if (!shopId) return;
     followMutation.mutate(shopId, {
-      onSuccess: () => Alert.alert("Done", "Shop follow status updated."),
-      onError: (err: any) => Alert.alert("Error", err?.response?.data?.message || "Failed to update follow"),
+      onSuccess: () => modal.show({ title: "Done", message: "Shop follow status updated.", variant: "success", autoDismiss: 2000 }),
+      onError: (err: any) => modal.show({ title: "Error", message: err?.response?.data?.message || "Failed to update follow", variant: "error" }),
     });
   };
 
@@ -60,12 +61,12 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     if (!shopId || pendingRating === 0) return;
     rateMutation.mutate({ shopId, rating: pendingRating }, {
       onSuccess: () => {
-        Alert.alert("Thanks!", `You rated ${product.shop?.name || "this shop"} ${pendingRating} star${pendingRating > 1 ? "s" : ""}.`);
+        modal.show({ title: "Thanks!", message: `You rated ${product.shop?.name || "this shop"} ${pendingRating} star${pendingRating > 1 ? "s" : ""}.`, variant: "success", autoDismiss: 2000 });
         setShowRating(false);
         setPendingRating(0);
         setShopActionsOpen(false);
       },
-      onError: (err: any) => Alert.alert("Error", err?.response?.data?.message || "Failed to submit rating"),
+      onError: (err: any) => modal.show({ title: "Error", message: err?.response?.data?.message || "Failed to submit rating", variant: "error" }),
     });
   };
   const isInCart = cartItems.some((item) => item.id === productId);

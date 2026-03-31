@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, Dimensions, Share } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Dimensions, Share } from "react-native";
+
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Heart, Share2, Plus, Minus, ShieldCheck, Truck, ShoppingCart, MessageSquare, Star } from "lucide-react-native";
@@ -7,6 +8,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { GoldCheck, ProductRating } from "@/components/ui/CommonUI";
 import { requireAuth } from "@/lib/authGuard";
+import { useAppModal } from "@/components/modals/AppModal";
 
 const screenWidth = Dimensions.get("window").width;
 const MAX_IMAGE_HEIGHT = 520;
@@ -75,6 +77,7 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
+  const modal = useAppModal();
 
   const { data: product, isLoading, error } = useProduct(id as string);
   
@@ -169,12 +172,12 @@ export default function ProductDetailScreen() {
     if (!product) return;
     if (!(await requireAuth("add items to cart"))) return;
     if (product.sizes?.length > 0 && !selectedSize) {
-      Alert.alert("Notice", "Please select a size");
+      modal.show({ title: "Select a Size", message: "Please choose a size before adding to cart.", variant: "warning" });
       return;
     }
     
     if (!cartStore) {
-      Alert.alert("Error", "Cart not available");
+      modal.show({ title: "Unavailable", message: "Cart is not available right now.", variant: "error" });
       return;
     }
 
@@ -190,10 +193,10 @@ export default function ProductDetailScreen() {
       };
       
       cartStore.addItem(productData);
-      Alert.alert("Success", "Added to Cart!");
+      modal.show({ title: "Added to Cart", message: `${product.name} is in your cart.`, variant: "success", autoDismiss: 2000 });
     } catch (err) {
       console.error("Error adding to cart:", err);
-      Alert.alert("Error", "Failed to add to cart");
+      modal.show({ title: "Error", message: "Failed to add to cart.", variant: "error" });
     }
   };
 
@@ -202,7 +205,7 @@ export default function ProductDetailScreen() {
     if (!(await requireAuth("save items to wishlist"))) return;
     
     if (!wishlistStore) {
-      Alert.alert("Error", "Wishlist not available");
+      modal.show({ title: "Unavailable", message: "Wishlist is not available right now.", variant: "error" });
       return;
     }
 
@@ -219,7 +222,7 @@ export default function ProductDetailScreen() {
       setIsInWishlist(!isInWishlist);
     } catch (err) {
       console.error("Error toggling wishlist:", err);
-      Alert.alert("Error", "Failed to update wishlist");
+      modal.show({ title: "Error", message: "Failed to update wishlist.", variant: "error" });
     }
   };
 

@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, Platform, Alert } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform } from 'react-native';
 import { CheckCircle2, X } from 'lucide-react-native';
 import { Star } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppModal } from '@/components/modals/AppModal';
 
 export default function PremiumScreen() {
   const [isAnnual, setIsAnnual] = useState(false);
   const { isDark } = useColorScheme();
+  const modal = useAppModal();
 
   // Mock user for now since we just need to replicate UI
   const user = { isPremium: false, premiumPlan: 'free' };
 
   const handleUpgradeClick = (plan: any) => {
     if (plan.name === 'Free') return;
-    Alert.alert('Upgrade', `Proceed to upgrade to ${plan.name} for KES ${isAnnual ? plan.price.annual : plan.price.monthly}?`);
+    modal.show({
+      title: "Upgrade Plan",
+      message: `Proceed to upgrade to ${plan.name} for KES ${isAnnual ? plan.price.annual : plan.price.monthly}?`,
+      variant: "confirm",
+      actions: [
+        { label: "Cancel", style: "secondary" },
+        { label: "Upgrade", style: "primary", onPress: () => {} },
+      ],
+    });
   };
 
   const plans = [

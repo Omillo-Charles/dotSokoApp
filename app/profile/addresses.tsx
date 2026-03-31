@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, ActivityIndicator,
   Modal, TextInput, KeyboardAvoidingView, Platform, Animated,
-  Alert, RefreshControl,
+  RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColorScheme } from "nativewind";
 import { useAddresses, Address } from "@/hooks/useAddresses";
+import { useAppModal } from "@/components/modals/AppModal";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type AddressType = "home" | "work" | "other";
@@ -411,6 +412,7 @@ function AddressFormModal({
 export default function AddressesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const modal = useAppModal();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
 
@@ -443,24 +445,25 @@ export default function AddressesScreen() {
       }
       setModalVisible(false);
     } catch (err: any) {
-      Alert.alert("Error", err?.response?.data?.message || err?.message || "Something went wrong");
+      modal.show({ title: "Error", message: err?.response?.data?.message || err?.message || "Something went wrong", variant: "error" });
     }
   };
 
   const handleDelete = (addressId: string) => {
-    Alert.alert(
-      "Remove Address",
-      "Are you sure you want to remove this address?",
-      [
-        { text: "Cancel", style: "cancel" },
+    modal.show({
+      title: "Remove Address",
+      message: "Are you sure you want to remove this address?",
+      variant: "destructive",
+      actions: [
+        { label: "Cancel", style: "secondary" },
         {
-          text: "Remove", style: "destructive",
+          label: "Remove", style: "destructive",
           onPress: () => deleteAddress.mutate(addressId, {
-            onError: (err: any) => Alert.alert("Error", err?.response?.data?.message || "Failed to delete"),
+            onError: (err: any) => modal.show({ title: "Error", message: err?.response?.data?.message || "Failed to delete", variant: "error" }),
           }),
         },
-      ]
-    );
+      ],
+    });
   };
 
   return (

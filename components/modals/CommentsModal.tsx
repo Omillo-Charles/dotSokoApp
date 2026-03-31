@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   View, Text, Modal, TouchableOpacity, FlatList,
   TextInput, KeyboardAvoidingView, Platform, ActivityIndicator,
-  Image, Alert,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useComments } from "@/hooks/useComments";
 import { useUser } from "@/hooks/useUser";
+import { useAppModal } from "@/components/modals/AppModal";
 
 interface Props {
   visible: boolean;
@@ -22,6 +23,7 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
   const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
   const { user } = useUser();
+  const modal = useAppModal();
   const { comments, isLoading, isPosting, createComment, deleteComment } = useComments(
     visible && productId ? productId : undefined
   );
@@ -38,7 +40,7 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
     const trimmed = text.trim();
     if (!trimmed) return;
     if (!user) {
-      Alert.alert("Sign in required", "Please sign in to post a comment.");
+      modal.show({ title: "Sign in required", message: "Please sign in to post a comment.", variant: "info" });
       return;
     }
     createComment({ productId, content: trimmed });
@@ -47,10 +49,15 @@ export function CommentsModal({ visible, onClose, productId, productName, initia
 
   const handleDelete = (commentId: string, authorId: string) => {
     if (!user || (user._id !== authorId && user.id !== authorId)) return;
-    Alert.alert("Delete comment", "Remove this comment?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: () => deleteComment(commentId) },
-    ]);
+    modal.show({
+      title: "Delete comment",
+      message: "Remove this comment?",
+      variant: "destructive",
+      actions: [
+        { label: "Cancel", style: "secondary" },
+        { label: "Delete", style: "destructive", onPress: () => deleteComment(commentId) },
+      ],
+    });
   };
 
   const renderComment = ({ item: comment, index }: { item: any; index: number }) => {

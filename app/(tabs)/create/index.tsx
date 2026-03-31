@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  Image, ActivityIndicator, Alert, KeyboardAvoidingView,
+  Image, ActivityIndicator, KeyboardAvoidingView,
   Platform, Modal, FlatList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +15,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useMyShop } from "@/hooks/useShop";
 import { CATEGORIES } from "@/constants/categories";
 import api from "@/lib/api";
+import { useAppModal } from "@/components/modals/AppModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PickedImage {
@@ -115,6 +116,7 @@ export default function CreateScreen() {
   const router = useRouter();
   const { isDark } = useColorScheme();
   const queryClient = useQueryClient();
+  const modal = useAppModal();
 
   const { data: myShop, isLoading: isShopLoading } = useMyShop();
 
@@ -143,13 +145,13 @@ export default function CreateScreen() {
   // ── Image picker ─────────────────────────────────────────────────────────────
   const pickImages = async () => {
     if (images.length >= 10) {
-      Alert.alert("Limit reached", "You can upload up to 10 images.");
+      modal.show({ title: "Limit reached", message: "You can upload up to 10 images.", variant: "warning" });
       return;
     }
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission required", "Please allow access to your photo library.");
+      modal.show({ title: "Permission required", message: "Please allow access to your photo library.", variant: "warning" });
       return;
     }
 
@@ -178,25 +180,33 @@ export default function CreateScreen() {
   const handleSubmit = async () => {
     const token = await AsyncStorage.getItem("accessToken");
     if (!token) {
-      Alert.alert("Not logged in", "Please sign in to post a product.");
-      router.push("/(auth)/login" as any);
+      modal.show({
+        title: "Not logged in",
+        message: "Please sign in to post a product.",
+        variant: "error",
+        actions: [
+          { label: "Cancel", style: "secondary" },
+          { label: "Sign In", style: "primary", onPress: () => router.push("/(auth)/login" as any) },
+        ],
+      });
       return;
     }
 
     if (!myShop) {
-      Alert.alert(
-        "No shop found",
-        "You need to register a shop before posting products.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Create Shop", onPress: () => router.push("/shop/create" as any) },
-        ]
-      );
+      modal.show({
+        title: "No shop found",
+        message: "You need to register a shop before posting products.",
+        variant: "warning",
+        actions: [
+          { label: "Cancel", style: "secondary" },
+          { label: "Create Shop", style: "primary", onPress: () => router.push("/shop/create" as any) },
+        ],
+      });
       return;
     }
 
     if (images.length === 0) {
-      Alert.alert("Images required", "Please add at least one product image.");
+      modal.show({ title: "Images required", message: "Please add at least one product image.", variant: "warning" });
       return;
     }
 
@@ -224,28 +234,26 @@ export default function CreateScreen() {
       });
 
       if (response.data.success) {
-        // Invalidate relevant caches
         queryClient.invalidateQueries({ queryKey: ["products"] });
         queryClient.invalidateQueries({ queryKey: ["my-products"] });
         queryClient.invalidateQueries({ queryKey: ["product-feed"] });
 
-        Alert.alert("Published!", "Your product is now live.", [
-          {
-            text: "View Product",
-            onPress: () => {
-              const pid = response.data.data?.id || response.data.data?._id;
-              resetForm();
-              if (pid) router.push(`/shop/product/${pid}` as any);
-            },
-          },
-          { text: "Post Another", onPress: resetForm },
-        ]);
+        const pid = response.data.data?.id || response.data.data?._id;
+        modal.show({
+          title: "Published!",
+          message: "Your product is now live.",
+          variant: "success",
+          actions: [
+            { label: "Post Another", style: "secondary", onPress: resetForm },
+            { label: "View Product", style: "primary", onPress: () => { resetForm(); if (pid) router.push(`/shop/product/${pid}` as any); } },
+          ],
+        });
       } else {
         throw new Error(response.data.message || "Failed to create product");
       }
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.friendlyMessage || err?.message || "Something went wrong";
-      Alert.alert("Error", msg);
+      modal.show({ title: "Error", message: msg, variant: "error" });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Star, BadgeCheck } from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/useUser";
 import api from "@/lib/api";
+import { useAppModal } from "@/components/modals/AppModal";
 
 export const GoldCheck = ({ size = 20 }: { size?: number }) => {
   return (
@@ -26,17 +27,18 @@ export const ProductRating = ({
 }: ProductRatingProps) => {
   const { user } = useUser();
   const queryClient = useQueryClient();
+  const modal = useAppModal();
   const [selectedRating, setSelectedRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRate = async (rating: number) => {
     if (!user) {
-      Alert.alert("Error", "Please login to rate this product");
+      modal.show({ title: "Sign in required", message: "Please login to rate this product.", variant: "info" });
       return;
     }
 
     if (!productId) {
-      Alert.alert("Error", "Product ID is missing");
+      modal.show({ title: "Error", message: "Product ID is missing.", variant: "error" });
       return;
     }
 
@@ -49,25 +51,16 @@ export const ProductRating = ({
       
       if (response.data.success) {
         setSelectedRating(rating);
-        
         queryClient.invalidateQueries({ queryKey: ['product', productId] });
         queryClient.invalidateQueries({ queryKey: ['products'] });
-
         if (onRatingUpdate && response.data.data) {
           onRatingUpdate(response.data.data.rating || rating, response.data.data.reviewsCount || initialReviewsCount + 1);
         }
-        
-        Alert.alert("Success", "Thank you for your rating!");
+        modal.show({ title: "Thank you!", message: "Your rating has been submitted.", variant: "success", autoDismiss: 2000 });
       }
     } catch (error: any) {
-      console.error("Error rating product:", error);
-      console.error("Error details:", {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
       const errorMessage = error.response?.data?.message || error.message || "Failed to submit rating.";
-      Alert.alert("Error", errorMessage);
+      modal.show({ title: "Error", message: errorMessage, variant: "error" });
     } finally {
       setIsSubmitting(false);
     }

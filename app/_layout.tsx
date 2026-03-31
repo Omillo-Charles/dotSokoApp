@@ -7,8 +7,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useColorScheme as useDeviceColorScheme } from "react-native";
 import { useColorScheme } from "nativewind";
 import { useThemeStore } from "../store/useThemeStore";
-import SplashScreen from "@components/ui/SplashScreen"; // <- our custom splash
+import SplashScreen from "@components/ui/SplashScreen";
 import { cleanupStorage } from "../lib/storageCleanup";
+import { AppModalProvider, useAppModal } from "@/components/modals/AppModal";
+import { setAuthModalHandler } from "@/lib/authGuard";
 import "../globals.css";
 
 // Prevent native splash from auto-hiding
@@ -20,6 +22,12 @@ function RootLayoutNav() {
   const deviceColorScheme = useDeviceColorScheme();
   const { theme } = useThemeStore();
   const { setColorScheme } = useColorScheme();
+  const modal = useAppModal();
+
+  // Register modal handler for auth guard
+  useEffect(() => {
+    setAuthModalHandler(modal.show);
+  }, [modal.show]);
 
   const colorScheme =
     theme === "system" ? (deviceColorScheme ?? "light") : theme;
@@ -88,7 +96,9 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <RootLayoutNav />
+        <AppModalProvider>
+          <RootLayoutNav />
+        </AppModalProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

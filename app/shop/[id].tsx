@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Image,
-  ActivityIndicator, Dimensions, Alert, Share, Modal
+  ActivityIndicator, Dimensions, Share, Modal
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +15,8 @@ import { useUser } from "@/hooks/useUser";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { GoldCheck } from "@/components/ui/CommonUI";
+import { useAppModal } from "@/components/modals/AppModal";
+import { requireAuth } from "@/lib/authGuard";
 
 const { width } = Dimensions.get("window");
 
@@ -39,6 +41,7 @@ export default function ShopDetailScreen() {
   const { user: currentUser } = useUser();
   const { addItem } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const modal = useAppModal();
 
   const products = useMemo(() => {
     return (productsData || []).map((p: any) => ({
@@ -50,15 +53,12 @@ export default function ShopDetailScreen() {
   const isFollowing = (shop as any)?.isFollowing ?? false;
 
   const handleFollowToggle = async () => {
-    if (!currentUser) {
-      Alert.alert("Notice", "Please login to follow shops");
-      return;
-    }
+    if (!(await requireAuth("follow shops"))) return;
     if (!shop?._id) return;
     try {
       await followMutation.mutateAsync(shop._id);
     } catch (err: any) {
-      Alert.alert("Error", err.response?.data?.message || "Failed to toggle follow");
+      modal.show({ title: "Error", message: err.response?.data?.message || "Failed to toggle follow", variant: "error" });
     }
   };
 
@@ -83,20 +83,16 @@ export default function ShopDetailScreen() {
   };
 
   const handleRateShop = async (rating: number) => {
-    if (!currentUser) {
-      Alert.alert("Notice", "Please login to rate this shop");
-      return;
-    }
+    if (!(await requireAuth("rate this shop"))) return;
     if (!shop?._id && !shop?.id) return;
-
     try {
       const shopId = shop._id || shop.id;
       await rateShopMutation.mutateAsync({ shopId, rating });
       setSelectedRating(rating);
       setShowRatingModal(false);
-      Alert.alert("Success", "Thank you for rating this shop!");
+      modal.show({ title: "Thank you!", message: "Your rating has been submitted.", variant: "success", autoDismiss: 2000 });
     } catch (err: any) {
-      Alert.alert("Error", err.response?.data?.message || "Failed to submit rating");
+      modal.show({ title: "Error", message: err.response?.data?.message || "Failed to submit rating", variant: "error" });
     }
   };
 
@@ -179,16 +175,13 @@ export default function ShopDetailScreen() {
                 </TouchableOpacity>
               )}
               {!currentUser && (
-                <TouchableOpacity onPress={() => Alert.alert("Notice", "Please login to follow")} className="px-5 py-2 rounded-full bg-slate-900 dark:bg-white">
+                <TouchableOpacity onPress={handleFollowToggle} className="px-5 py-2 rounded-full bg-slate-900 dark:bg-white">
                   <Text className="text-xs font-ubuntu-bold text-white dark:text-slate-900">Follow</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity 
-                onPress={() => {
-                  if (!currentUser) {
-                    Alert.alert("Notice", "Please login to rate this shop");
-                    return;
-                  }
+                onPress={async () => {
+                  if (!(await requireAuth("rate this shop"))) return;
                   setShowRatingModal(true);
                 }}
                 className="p-2 rounded-full border border-slate-200 dark:border-slate-700"
@@ -303,9 +296,15 @@ export default function ShopDetailScreen() {
                           </View>
                         )}
                         <TouchableOpacity
-                          onPress={() => {
+                          onPress={async () => {
+                            if (!(await requireAuth("add items to cart"))) return;
                             addItem({ id: p._id, name: p.name, price: p.price, image: p.image || p.images?.[0], quantity: 1, category: p.category || "" });
-                            Alert.alert("Added", `${p.name} added to cart`);
+                            modal.show({ 
+                              title: "Added to Cart", 
+                              message: `${p.name} is in your cart.`, 
+                              variant: "success", 
+                              autoDismiss: 2000 
+                            });
                           }}
                           className="ml-auto p-1"
                         >

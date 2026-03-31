@@ -4,10 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { WebView } from "react-native-webview";
 import { useColorScheme } from "../../../hooks/useColorScheme";
+import { useAppModal } from "@/components/modals/AppModal";
 
 export default function ContactScreen() {
   const { isDark } = useColorScheme();
   const router = useRouter();
+  const modal = useAppModal();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -22,7 +24,12 @@ export default function ContactScreen() {
     setTimeout(() => {
       setIsSubmitting(false);
       setForm({ name: "", email: "", subject: "", message: "" });
-      alert("Message sent successfully!");
+      modal.show({ 
+        title: "Message Sent!", 
+        message: "We'll get back to you soon.", 
+        variant: "success", 
+        autoDismiss: 2500 
+      });
     }, 1500);
   };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  Image, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Modal,
+  Image, ActivityIndicator, KeyboardAvoidingView, Platform, Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "@/lib/api";
 import { calculateShippingFee } from "@/lib/shipping";
+import { useAppModal } from "@/components/modals/AppModal";
 
 const fmt = (n: number) => `KES ${n.toLocaleString()}`;
 
@@ -80,6 +81,7 @@ export default function CheckoutScreen() {
   const { items, getSubtotal, clearCart } = useCartStore();
   const { addresses, isLoading: isAddressLoading } = useAddresses();
   const queryClient = useQueryClient();
+  const modal = useAppModal();
 
   const subtotal = getSubtotal();
   const shippingFee = calculateShippingFee(subtotal);
@@ -136,7 +138,7 @@ export default function CheckoutScreen() {
         throw new Error(res.data.message || "Failed to place order");
       }
     } catch (err: any) {
-      Alert.alert("Error", err?.response?.data?.message || err?.message || "Something went wrong");
+      modal.show({ title: "Order Failed", message: err?.response?.data?.message || err?.message || "Something went wrong", variant: "error" });
     } finally {
       setIsSubmitting(false);
       setShowConfirm(false);
@@ -370,7 +372,7 @@ export default function CheckoutScreen() {
         <TouchableOpacity
           onPress={() => {
             if (!canSubmit) {
-              Alert.alert("Missing details", "Please fill in all delivery fields.");
+              modal.show({ title: "Missing Details", message: "Please fill in all delivery fields.", variant: "warning" });
               return;
             }
             setShowConfirm(true);

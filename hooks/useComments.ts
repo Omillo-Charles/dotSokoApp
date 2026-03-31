@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Alert } from 'react-native';
 
 export const useComments = (productId?: string) => {
   const queryClient = useQueryClient();
@@ -33,14 +32,15 @@ export const useComments = (productId?: string) => {
       // Optimitic UI can go here
     },
     onError: (error: any) => {
-      Alert.alert('Error', error.friendlyMessage || 'Failed to post comment');
+      // Error handling moved to component level with AppModal
+      console.error('Failed to post comment:', error);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', productId] });
       queryClient.invalidateQueries({ queryKey: ['product', productId] });
     },
     onSuccess: () => {
-      // Alert.alert('Success', 'Comment posted successfully');
+      // Success handling moved to component level
     },
   });
 
@@ -52,10 +52,10 @@ export const useComments = (productId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', productId] });
       queryClient.invalidateQueries({ queryKey: ['product', productId] });
-      // Alert.alert('Success', 'Comment deleted successfully');
     },
     onError: (error: any) => {
-      Alert.alert('Error', error.friendlyMessage || 'Failed to delete comment');
+      // Error handling moved to component level with AppModal
+      console.error('Failed to delete comment:', error);
     },
   });
 
