@@ -4,9 +4,13 @@ import { Platform } from 'react-native';
 
 let apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5500/api/v1";
 
-// Handle Android Emulator localhost (10.0.2.2)
-if (Platform.OS === 'android' && apiUrl.includes('localhost')) {
-  apiUrl = apiUrl.replace('localhost', '10.0.2.2');
+// Handle Android Emulator: map both localhost and LAN IPs to 10.0.2.2
+if (Platform.OS === 'android') {
+  if (apiUrl.includes('localhost')) {
+    apiUrl = apiUrl.replace('localhost', '10.0.2.2');
+  } else if (apiUrl.includes('127.0.0.1')) {
+    apiUrl = apiUrl.replace('127.0.0.1', '10.0.2.2');
+  }
 }
 
 // More robust cross-platform storage with fail-safe fallback

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   Image, ActivityIndicator, Alert, KeyboardAvoidingView,
@@ -257,11 +257,92 @@ export default function CreateScreen() {
     setStep(0);
   };
 
-  // ── Loading / auth guard ─────────────────────────────────────────────────────
-  if (isShopLoading) {
+  // ── Auth + shop guard ────────────────────────────────────────────────────────
+  const [token, setToken] = useState<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    AsyncStorage.getItem("accessToken").then(setToken).catch(() => setToken(null));
+  }, []);
+
+  // Still resolving token or shop
+  if (token === undefined || (token && isShopLoading)) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: isDark ? "#020617" : "#f8fafc" }}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color="#f97316" />
+      </View>
+    );
+  }
+
+  // Not logged in
+  if (!token) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, backgroundColor: isDark ? "#020617" : "#f8fafc" }}>
+        <View style={{
+          width: 72, height: 72, borderRadius: 20,
+          backgroundColor: isDark ? "#1e293b" : "#fee2e2",
+          alignItems: "center", justifyContent: "center", marginBottom: 20,
+        }}>
+          <Ionicons name="lock-closed" size={32} color="#ef4444" />
+        </View>
+        <Text style={{ fontSize: 20, fontFamily: "Ubuntu-Bold", color: isDark ? "#ffffff" : "#0f172a", textAlign: "center", marginBottom: 8 }}>
+          Sign in required
+        </Text>
+        <Text style={{ fontSize: 14, fontFamily: "Ubuntu-Regular", color: isDark ? "#94a3b8" : "#64748b", textAlign: "center", marginBottom: 32, lineHeight: 22 }}>
+          You need to be signed in to post a product.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/(auth)/login" as any)}
+          style={{
+            backgroundColor: "#f97316", paddingHorizontal: 32, paddingVertical: 14,
+            borderRadius: 16, width: "100%", alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 15, fontFamily: "Ubuntu-Bold", color: "#ffffff" }}>Sign In</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push("/(auth)/register" as any)}
+          style={{ marginTop: 12, paddingVertical: 14, width: "100%", alignItems: "center" }}
+        >
+          <Text style={{ fontSize: 14, fontFamily: "Ubuntu-Medium", color: isDark ? "#94a3b8" : "#64748b" }}>
+            Don't have an account? <Text style={{ color: "#f97316" }}>Register</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Logged in but no shop
+  if (!myShop) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, backgroundColor: isDark ? "#020617" : "#f8fafc" }}>
+        <View style={{
+          width: 72, height: 72, borderRadius: 20,
+          backgroundColor: isDark ? "#1e293b" : "#fef3c7",
+          alignItems: "center", justifyContent: "center", marginBottom: 20,
+        }}>
+          <Ionicons name="storefront-outline" size={32} color="#f59e0b" />
+        </View>
+        <Text style={{ fontSize: 20, fontFamily: "Ubuntu-Bold", color: isDark ? "#ffffff" : "#0f172a", textAlign: "center", marginBottom: 8 }}>
+          No shop found
+        </Text>
+        <Text style={{ fontSize: 14, fontFamily: "Ubuntu-Regular", color: isDark ? "#94a3b8" : "#64748b", textAlign: "center", marginBottom: 32, lineHeight: 22 }}>
+          You need to register a shop before you can post products.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/shop/create" as any)}
+          style={{
+            backgroundColor: "#f97316", paddingHorizontal: 32, paddingVertical: 14,
+            borderRadius: 16, width: "100%", alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 15, fontFamily: "Ubuntu-Bold", color: "#ffffff" }}>Create a Shop</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ marginTop: 12, paddingVertical: 14, width: "100%", alignItems: "center" }}
+        >
+          <Text style={{ fontSize: 14, fontFamily: "Ubuntu-Medium", color: isDark ? "#94a3b8" : "#64748b" }}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }

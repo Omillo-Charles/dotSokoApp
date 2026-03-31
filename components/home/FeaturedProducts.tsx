@@ -177,7 +177,17 @@ export const FeaturedProducts = () => {
     );
   }
 
-  if (isError || products.length === 0) {
+  if (isError) {
+    return (
+      <View className="flex-1 w-full bg-slate-50 dark:bg-slate-900 mt-2 pb-6 justify-center items-center py-12">
+        <Text className="text-slate-500 dark:text-slate-400 font-ubuntu-medium text-sm">
+          Could not load products. Check your connection.
+        </Text>
+      </View>
+    );
+  }
+
+  if (products.length === 0) {
     return null;
   }
 

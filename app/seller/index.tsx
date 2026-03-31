@@ -179,7 +179,7 @@ export default function SellerDashboard() {
               <Text className="text-sm font-ubuntu-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">Quick Actions</Text>
               <View className="flex-row gap-4">
                 <TouchableOpacity 
-                  onPress={() => {}}
+                  onPress={() => router.push("/(tabs)/create" as any)}
                   className="flex-1 bg-primary h-14 rounded-2xl flex-row items-center justify-center shadow-lg shadow-primary/20"
                 >
                   <Plus size={20} color="#ffffff" />
