@@ -14,18 +14,14 @@ import {
   Store, 
   Settings, 
   Zap, 
-  Clock, 
   LayoutDashboard,
   ChevronRight,
   TrendingUp,
   CreditCard,
   MessageSquare,
   Users,
-  Heart,
-  ShoppingCart,
-  Star
+  Heart
 } from 'lucide-react-native';
-import { useCartStore } from "@/store/useCartStore";
 
 const { width } = Dimensions.get('window');
 
@@ -35,7 +31,6 @@ export default function SellerDashboard() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useColorScheme();
-  const { addItem } = useCartStore();
   
   const [activeSection, setActiveSection] = useState<SectionType>('Dashboard');
 
@@ -210,7 +205,7 @@ export default function SellerDashboard() {
                 title="Recent Orders"
                 subtitle={`${orders.length} orders total`}
                 color="#3b82f6"
-                onPress={() => {}}
+                onPress={() => router.push("/seller/orders" as any)}
               />
               <DashboardMenuItem
                 icon={CreditCard}
@@ -224,14 +219,14 @@ export default function SellerDashboard() {
                 title="Customer Reviews"
                 subtitle="Manage feedback and ratings"
                 color="#f59e0b"
-                onPress={() => {}}
+                onPress={() => router.push("/seller/reviews" as any)}
               />
               <DashboardMenuItem
                 icon={Settings}
                 title="Shop Settings"
                 subtitle="Edit details and branding"
                 color="#64748b"
-                onPress={() => router.push("/shop/create" as any)}
+                onPress={() => router.push("/seller/settings" as any)}
               />
             </View>
           </View>
