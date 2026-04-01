@@ -79,7 +79,7 @@ export default function SellerDashboard() {
     { label: "Earnings", value: `KES ${totalEarnings.toLocaleString()}`, icon: BarChart3, color: "#10b981", bg: "bg-emerald-500/10" },
     { label: "Active Orders", value: activeOrdersCount.toString(), icon: Package, color: "#3b82f6", bg: "bg-blue-500/10" },
     { label: "Products", value: products.length.toString(), icon: ShoppingBag, color: "#a855f7", bg: "bg-purple-500/10", section: 'Products' as SectionType },
-    { label: "Followers", value: (shop?.followersCount || 0).toString(), icon: Zap, color: "#f59e0b", bg: "bg-amber-500/10", section: 'Followers' as SectionType },
+    { label: "Followers", value: (shop?.followersCount || 0).toString(), icon: Users, color: "#f59e0b", bg: "bg-amber-500/10", section: 'Followers' as SectionType },
   ];
 
   const iconMuted = isDark ? "#94a3b8" : "#64748b";
