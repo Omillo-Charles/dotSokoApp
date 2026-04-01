@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -82,9 +82,54 @@ export default function CartScreen() {
   const { isDark } = useColorScheme();
   const { items, getSubtotal } = useCartStore();
 
+  const [promoExpanded, setPromoExpanded] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: number } | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+
   const subtotal = getSubtotal();
+  const discount = appliedPromo ? appliedPromo.discount : 0;
   const shipping = subtotal > 0 ? 500 : 0;
-  const total = subtotal + shipping;
+  const total = subtotal - discount + shipping;
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      setPromoError("Please enter a promo code");
+      return;
+    }
+
+    setIsApplyingPromo(true);
+    setPromoError("");
+
+    // Simulate API call - replace with actual API call
+    setTimeout(() => {
+      // Mock promo codes for testing
+      const mockPromoCodes: Record<string, number> = {
+        "SAVE10": subtotal * 0.1,
+        "SAVE20": subtotal * 0.2,
+        "FLAT500": 500,
+        "WELCOME": subtotal * 0.15,
+      };
+
+      const upperCode = promoCode.toUpperCase();
+      if (mockPromoCodes[upperCode]) {
+        setAppliedPromo({ code: upperCode, discount: mockPromoCodes[upperCode] });
+        setPromoError("");
+        setPromoExpanded(false);
+      } else {
+        setPromoError("Invalid promo code");
+        setAppliedPromo(null);
+      }
+      setIsApplyingPromo(false);
+    }, 800);
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode("");
+    setPromoError("");
+  };
 
   return (
     <View className="flex-1 bg-slate-50 dark:bg-slate-950" style={{ paddingTop: insets.top }}>
@@ -111,21 +156,101 @@ export default function CartScreen() {
               <CartItemCard key={item.id} item={item} />
             ))}
 
-            <TouchableOpacity className="flex-row items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-3xl mb-6 shadow-sm border border-slate-100 dark:border-white/5">
-              <View className="flex-row items-center">
-                <Ionicons name="ticket-outline" size={24} color="#f97316" />
-                <Text className="ml-3 font-ubuntu text-slate-900 dark:text-white text-base">
-                  Apply Promo Code
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </TouchableOpacity>
+            {/* Promo Code Section */}
+            <View className="bg-white dark:bg-slate-900 rounded-3xl mb-6 shadow-sm border border-slate-100 dark:border-white/5 overflow-hidden">
+              <TouchableOpacity 
+                className="flex-row items-center justify-between p-5"
+                onPress={() => setPromoExpanded(!promoExpanded)}
+                activeOpacity={0.7}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name="ticket-outline" size={24} color="#f97316" />
+                  <Text className="ml-3 font-ubuntu text-slate-900 dark:text-white text-base">
+                    {appliedPromo ? "Promo Applied" : "Apply Promo Code"}
+                  </Text>
+                  {appliedPromo && (
+                    <View className="ml-2 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg">
+                      <Text className="text-green-700 dark:text-green-400 font-ubuntu-bold text-xs">
+                        {appliedPromo.code}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Ionicons 
+                  name={promoExpanded ? "chevron-up" : "chevron-forward"} 
+                  size={20} 
+                  color="#94a3b8" 
+                />
+              </TouchableOpacity>
+
+              {promoExpanded && (
+                <View className="px-5 pb-5 border-t border-slate-100 dark:border-white/5 pt-4">
+                  <View className="space-y-3">
+                    <View className="flex-row items-center bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-3 border border-slate-200 dark:border-slate-700">
+                      <TextInput
+                        value={promoCode}
+                        onChangeText={(text) => {
+                          setPromoCode(text);
+                          setPromoError("");
+                        }}
+                        placeholder="Enter promo code"
+                        placeholderTextColor={isDark ? "#64748b" : "#94a3b8"}
+                        className="flex-1 font-ubuntu text-slate-900 dark:text-white text-base"
+                        autoCapitalize="characters"
+                        editable={!isApplyingPromo}
+                      />
+                    </View>
+                    <View style={{ height: 12 }} />
+                    <TouchableOpacity
+                      onPress={handleApplyPromo}
+                      disabled={isApplyingPromo || !promoCode.trim()}
+                      className={`px-6 py-3 rounded-xl items-center justify-center ${
+                        isApplyingPromo || !promoCode.trim()
+                          ? 'bg-slate-300 dark:bg-slate-700'
+                          : 'bg-primary'
+                      }`}
+                      activeOpacity={0.7}
+                    >
+                      {isApplyingPromo ? (
+                        <ActivityIndicator size="small" color="#ffffff" />
+                      ) : (
+                        <Text className="text-white font-ubuntu-bold text-base">Apply Promo Code</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  {promoError ? (
+                    <Text className="text-red-500 font-ubuntu text-sm mt-2">
+                      {promoError}
+                    </Text>
+                  ) : null}
+                </View>
+              )}
+            </View>
 
             <View className="bg-white dark:bg-slate-900 rounded-3xl p-6 mb-10 shadow-sm border border-slate-100 dark:border-white/5">
               <View className="flex-row justify-between mb-4">
                 <Text className="font-ubuntu text-slate-500 dark:text-slate-400">Subtotal</Text>
                 <Text className="font-ubuntu-bold text-slate-900 dark:text-white">Ksh {subtotal.toLocaleString()}</Text>
               </View>
+              {appliedPromo && (
+                <View className="flex-row justify-between mb-4">
+                  <View className="flex-row items-center">
+                    <Text className="font-ubuntu text-green-600 dark:text-green-400">
+                      Discount ({appliedPromo.code})
+                    </Text>
+                    <TouchableOpacity 
+                      onPress={handleRemovePromo}
+                      className="ml-2 p-1"
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons name="close-circle" size={16} color="#ef4444" />
+                    </TouchableOpacity>
+                  </View>
+                  <Text className="font-ubuntu-bold text-green-600 dark:text-green-400">
+                    -Ksh {discount.toLocaleString()}
+                  </Text>
+                </View>
+              )}
               <View className="flex-row justify-between mb-4">
                 <Text className="font-ubuntu text-slate-500 dark:text-slate-400">Shipping</Text>
                 <Text className="font-ubuntu-bold text-slate-900 dark:text-white">Ksh {shipping.toLocaleString()}</Text>
