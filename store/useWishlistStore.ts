@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
+import api from "../lib/api";
 
 export interface WishlistItem {
   id: string;
@@ -50,12 +51,9 @@ export const useWishlistStore = create<WishlistState>()(
 
       setHasHydrated: (v) => set({ _hasHydrated: v }),
 
-      toggleWishlist: (product) => {
+      toggleWishlist: async (product) => {
         try {
-          if (!product || !product.id) {
-            console.error("Invalid product for wishlist");
-            return;
-          }
+          if (!product || !product.id) return;
           const { items } = get();
           const safeProduct: WishlistItem = { 
             id: String(product.id),
@@ -65,36 +63,39 @@ export const useWishlistStore = create<WishlistState>()(
             category: product.category !== undefined ? String(product.category) : ""
           };
           const exists = items.find((item) => item.id === safeProduct.id);
+          
           set({ items: exists ? items.filter((item) => item.id !== safeProduct.id) : [...items, safeProduct] });
+
+          // Sync with API
+          const token = await safeStorage.getItem("accessToken");
+          if (token) {
+             await api.post('/wishlist/toggle', { productId: safeProduct.id });
+          }
         } catch (error) {
           console.error("Error toggling wishlist:", error);
         }
       },
 
-      removeItem: (id) => {
+      removeItem: async (id) => {
         try {
           set({ items: get().items.filter((item) => item.id !== id) });
+          
+          // Sync with API
+          const token = await safeStorage.getItem("accessToken");
+          if (token) {
+             await api.delete(`/wishlist/${id}`);
+          }
         } catch (error) {
           console.error("Error removing item:", error);
         }
       },
 
       isInWishlist: (id) => {
-        try {
-          return get().items.some((item) => item.id === id);
-        } catch (error) {
-          console.error("Error checking wishlist:", error);
-          return false;
-        }
+        return get().items.some((item) => item.id === id);
       },
 
       getTotalItems: () => {
-        try {
-          return get().items.length;
-        } catch (error) {
-          console.error("Error getting total items:", error);
-          return 0;
-        }
+        return get().items.length;
       },
     }),
     {
@@ -104,7 +105,6 @@ export const useWishlistStore = create<WishlistState>()(
       onRehydrateStorage: () => (state) => {
         try {
           if (state?.items && Array.isArray(state.items)) {
-            // Filter out any invalid items and ensure category is defined
             state.items = state.items
               .filter((item: any) => item && typeof item === 'object' && item.id)
               .map((item: any) => ({
@@ -121,8 +121,7 @@ export const useWishlistStore = create<WishlistState>()(
           }
         }
       },
-      migrate: (persistedState: any, version: number) => {
-        // Validate and clean up items during migration
+      migrate: (persistedState: any) => {
         if (persistedState && persistedState.items && Array.isArray(persistedState.items)) {
           persistedState.items = persistedState.items
             .filter((item: any) => item && typeof item === 'object' && item.id)
@@ -138,9 +137,6 @@ export const useWishlistStore = create<WishlistState>()(
   )
 );
 
-/**
- * Call on sign-out: wipes in-memory state and removes the persisted key.
- */
 export const clearWishlistStore = async () => {
   try {
     useWishlistStore.setState({ items: [], _hasHydrated: true });
@@ -151,9 +147,6 @@ export const clearWishlistStore = async () => {
   }
 };
 
-/**
- * Force reset wishlist storage if corrupted
- */
 export const resetWishlistStorage = async () => {
   try {
     await clearWishlistStore();

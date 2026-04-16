@@ -25,3 +25,33 @@ export const useOrderById = (id: string) => {
     staleTime: 1000 * 60 * 5,
   });
 };
+
+export const useTrackOrder = (orderId: string) => {
+  return useQuery({
+    queryKey: ["track-order", orderId],
+    queryFn: async () => {
+      const response = await api.get(`/orders/track/${orderId}`);
+      return response.data.data;
+    },
+    enabled: !!orderId,
+    staleTime: 1000 * 60,
+  });
+};
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+export const useUpdateOrderStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
+      const response = await api.patch(`/orders/${orderId}/status`, { status });
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["seller-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order", variables.orderId] });
+      queryClient.invalidateQueries({ queryKey: ["track-order", variables.orderId] });
+    }
+  });
+};

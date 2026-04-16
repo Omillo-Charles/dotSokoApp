@@ -8,9 +8,24 @@ export const useProducts = (params?: any) => {
       const response = await api.get("/products", {
         params: { limit: 20, ...params },
       });
-      return response.data.data || [];
+      const data = response.data.data || [];
+      return data.map((p: any) => ({ ...p, _id: p.id || p._id }));
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useLimitedProducts = (limit: number, otherParams?: any) => {
+  return useQuery({
+    queryKey: ['products-limited', limit, otherParams],
+    queryFn: async () => {
+      const response = await api.get('/products', { 
+        params: { ...otherParams, limit } 
+      });
+      const data = response.data.data || [];
+      return data.map((p: any) => ({ ...p, _id: p.id || p._id }));
+    },
+    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -21,7 +36,11 @@ export const useInfiniteProducts = (params?: any) => {
       const response = await api.get("/products", {
         params: { ...params, page: pageParam, limit: 12 },
       });
-      return response.data;
+      const data = response.data;
+      if (data.data && Array.isArray(data.data)) {
+        data.data = data.data.map((p: any) => ({ ...p, _id: p.id || p._id }));
+      }
+      return data;
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage: any) => {
@@ -39,7 +58,8 @@ export const usePersonalizedFeed = (limit: number = 12) => {
     queryKey: ["product-feed", limit],
     queryFn: async () => {
       const response = await api.get("/products/feed", { params: { limit } });
-      return response.data.data || [];
+      const data = response.data.data || [];
+      return data.map((p: any) => ({ ...p, _id: p.id || p._id }));
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -50,9 +70,35 @@ export const useProduct = (id: string) => {
     queryKey: ["product", id],
     queryFn: async () => {
       const response = await api.get(`/products/${id}`);
-      return response.data.data;
+      const product = response.data.data;
+      if (product && !product._id) {
+        product._id = product.id;
+      }
+      return product;
     },
-    enabled: !!id,
+    enabled: !!id && id !== 'undefined',
     staleTime: 1000 * 60 * 10,
   });
+};
+
+export const useFeaturedProducts = (limit: number = 4) => {
+  return useQuery({
+    queryKey: ['featured-products', limit],
+    queryFn: async () => {
+      const response = await api.get('/products', { params: { limit } });
+      const data = response.data.data || [];
+      return data.map((p: any) => ({ ...p, _id: p.id || p._id }));
+    },
+    staleTime: 1000 * 60 * 15, // 15 minutes
+  });
+};
+
+export const useTrackActivity = () => {
+  return async (data: { type: string; productId?: string; category?: string; searchQuery?: string }) => {
+    try {
+      await api.post('/products/track', data);
+    } catch (error) {
+      console.warn('[Tracking Data Failed]');
+    }
+  };
 };

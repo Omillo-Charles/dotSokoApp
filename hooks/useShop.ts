@@ -126,3 +126,47 @@ export const useRateShop = () => {
     },
   });
 };
+
+export const usePopularShops = (limit?: number) => {
+  return useQuery({
+    queryKey: ['popular-shops', limit],
+    queryFn: async () => {
+      const response = await api.get('/shops', {
+        params: { limit }
+      });
+      return response.data.data;
+    },
+  });
+};
+
+export const useShops = (params?: {
+  q?: string;
+  category?: string;
+  verified?: boolean;
+  minRating?: number;
+  sortBy?: 'newest' | 'oldest' | 'rating' | 'popular' | 'products';
+  limit?: number;
+  page?: number;
+}) => {
+  return useQuery({
+    queryKey: ['shops', params],
+    queryFn: async () => {
+      const response = await api.get('/shops', { params });
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useSellerAnalytics = (period: string = '30') => {
+  return useQuery({
+    queryKey: ['seller-analytics', period],
+    queryFn: async () => {
+      const response = await api.get('/shops/my-shop/analytics', {
+        params: { period }
+      });
+      return response.data.data;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+};

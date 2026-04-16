@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
+import api from "../lib/api";
 
 export interface CartItem {
   id: string;
@@ -48,12 +49,9 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
 
-      addItem: (product) => {
+      addItem: async (product) => {
         try {
-          if (!product || !product.id) {
-            console.error("Invalid product for cart");
-            return;
-          }
+          if (!product || !product.id) return;
           const { items } = get();
           const safeProduct: CartItem = { 
             id: String(product.id),
@@ -64,65 +62,82 @@ export const useCartStore = create<CartState>()(
             category: product.category !== undefined ? String(product.category) : ""
           };
           const existing = items.find((item) => item.id === safeProduct.id);
+          
           if (existing) {
             set({ items: items.map((item) => item.id === safeProduct.id ? { ...item, quantity: item.quantity + 1 } : item) });
           } else {
             set({ items: [...items, safeProduct] });
+          }
+
+          // Sync with API
+          const token = await safeStorage.getItem("accessToken");
+          if (token) {
+             await api.post('/carts/add', { productId: safeProduct.id, quantity: 1 });
           }
         } catch (error) {
           console.error("Error adding item to cart:", error);
         }
       },
 
-      removeItem: (id) => {
+      removeItem: async (id) => {
         try {
           set({ items: get().items.filter((item) => item.id !== id) });
+          
+          // Sync with API
+          const token = await safeStorage.getItem("accessToken");
+          if (token) {
+             await api.delete(`/carts/item/${id}`);
+          }
         } catch (error) {
           console.error("Error removing item from cart:", error);
         }
       },
 
-      updateQuantity: (id, quantity) => {
+      updateQuantity: async (id, quantity) => {
         try {
-          if (quantity <= 0) { get().removeItem(id); return; }
+          if (quantity <= 0) { 
+            get().removeItem(id); 
+            return; 
+          }
           set({ items: get().items.map((item) => item.id === id ? { ...item, quantity } : item) });
+          
+          // Sync with API
+          const token = await safeStorage.getItem("accessToken");
+          if (token) {
+             await api.put(`/carts/item/${id}`, { quantity });
+          }
         } catch (error) {
           console.error("Error updating quantity:", error);
         }
       },
 
-      clearCart: () => {
+      clearCart: async () => {
         try {
           set({ items: [] });
+          
+          // Sync with API
+          const token = await safeStorage.getItem("accessToken");
+          if (token) {
+             await api.delete('/carts/clear');
+          }
         } catch (error) {
           console.error("Error clearing cart:", error);
         }
       },
 
       getTotalItems: () => {
-        try {
-          return get().items.reduce((acc, item) => acc + item.quantity, 0);
-        } catch (error) {
-          console.error("Error getting total items:", error);
-          return 0;
-        }
+        return get().items.reduce((acc, item) => acc + item.quantity, 0);
       },
 
       getSubtotal: () => {
-        try {
-          return get().items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        } catch (error) {
-          console.error("Error getting subtotal:", error);
-          return 0;
-        }
+        return get().items.reduce((acc, item) => acc + item.price * item.quantity, 0);
       },
     }),
     {
       name: "cart-storage",
       version: 2,
       storage: createJSONStorage(() => safeStorage),
-      migrate: (persistedState: any, version: number) => {
-        // Validate and clean up items during migration
+      migrate: (persistedState: any) => {
         if (persistedState && persistedState.items && Array.isArray(persistedState.items)) {
           persistedState.items = persistedState.items
             .filter((item: any) => item && typeof item === 'object' && item.id)
@@ -137,10 +152,6 @@ export const useCartStore = create<CartState>()(
   )
 );
 
-/**
- * Call on sign-out: wipes in-memory state and removes the persisted key.
- * Call on sign-in: re-hydrates automatically from the same key (no-op needed).
- */
 export const clearCartStore = async () => {
   try {
     useCartStore.setState({ items: [] });
@@ -151,9 +162,6 @@ export const clearCartStore = async () => {
   }
 };
 
-/**
- * Force reset cart storage if corrupted
- */
 export const resetCartStorage = async () => {
   try {
     await clearCartStore();
